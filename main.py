@@ -115,7 +115,7 @@ def handle_list(master_passwd, vault):
         return
 
     # List all entries in the vault
-    entries = list_entries(vault)
+    entries = list_entries(master_passwd, vault)
     if entries:
         print("Entries in vault:")
         for e in entries:

@@ -43,32 +43,33 @@ def load_vault(vault, master_password: str):
     """Unlock and decrypt the existing vault file."""
     try:
         vault_file_name = str(vault) + ".csv"
-        vault_data = ""
+        vault_data = []
         with open(vault_file_name, "r") as file:
-            encrypted_data = file.readline()
-            encrypted_data = ast.literal_eval(encrypted_data)
+            # for line in file:
+            while line := file.readline():
+                encrypted_data = line
+                encrypted_data = ast.literal_eval(encrypted_data)
 
-            # encrytped_data = encrypted_data.decode('utf-8') 
-            print(encrypted_data)
-            try:
-                # decrypted_data = decrypt(master_password.encode("utf-8"), encrypted_data, decode = False)
-                decrypted_name = decrypt(master_password, encrypted_data['name'])
-                decrypted_username = decrypt(master_password, encrypted_data['username'])
-                decrypted_secret = decrypt(master_password, encrypted_data['secret']) 
-                decrypted_notes = decrypt(master_password, encrypted_data['notes'])
-                decrypted_dict = {'name':decrypted_name, 'username':decrypted_username, 'secret':decrypted_secret, 'notes':decrypted_notes}
-                print(f"{decrypted_dict=}")
-            #decrypted_data = decrypt_data(encrypt_data,master_password)
-            except ValueError as e:
-                print("Wrong password")
-                return None
-            vault_data += str(decrypted_dict)
+                # encrytped_data = encrypted_data.decode('utf-8') 
+                print(encrypted_data)
+                try:
+                    # decrypted_data = decrypt(master_password.encode("utf-8"), encrypted_data, decode = False)
+                    decrypted_name = decrypt(master_password, encrypted_data['name'])
+                    decrypted_username = decrypt(master_password, encrypted_data['username'])
+                    decrypted_secret = decrypt(master_password, encrypted_data['secret']) 
+                    decrypted_notes = decrypt(master_password, encrypted_data['notes'])
+                    decrypted_dict = {'name':decrypted_name, 'username':decrypted_username, 'secret':decrypted_secret, 'notes':decrypted_notes}
+                    print(f"{decrypted_dict=}")
+                #decrypted_data = decrypt_data(encrypt_data,master_password)
+                except ValueError as e:
+                    print("Wrong password")
+                    return None
+                vault_data.append((decrypted_dict))
         return vault_data    
     except Exception as e:
         print(f"Failed to load vault: {e}")
         raise
-    pass1
-    
+    pass
 
 def save_vault(vault_data, vault_name, master_password: str):
     """Encrypt and save the vault data to the file."""
@@ -84,7 +85,7 @@ def save_vault(vault_data, vault_name, master_password: str):
     vault_file_name = str(vault_name) + ".csv"
     with open(vault_file_name, 'a') as f:
         # headers = ['name', 'username', 'secret', 'notes']
-        f.write(str(adding_dict))
+        f.write(str(adding_dict) + "\n")
         # data_dic = dict(zip(headers, vault_data))
         # print(data_dic)
         # writer = csv.DictWriter(f, fieldnames=headers)

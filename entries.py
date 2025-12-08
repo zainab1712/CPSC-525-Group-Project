@@ -33,18 +33,21 @@ def delete_entry(vault_data, name):
         count = count + 1
     return False
 
-def list_entries(vault_data):
+def list_entries(master_passwd, vault_name):
     """List all entries in the vault."""
-    entries = vault_data.get("entries", [])
-    return entries
-
+    # entries = vault_data.get("entries", [])
+    # return entries
+    vault_data = load_vault(vault_name, master_passwd)
+    print(f"{vault_data=}")
+    return vault_data
+    # return None
 def get_entry(master_passwd, vault_name, name):
     """Get details for a specific entry by name."""
     # vault_file_name = str(vault_name) + ".csv"
     # --- Decyrpt the data
     vault_data = load_vault(vault_name, master_passwd)
     print(f"{vault_data=}") 
-    all_entries_names = []
+    # all_entries_names = []
     # print(f"{vault_data=}")
     # with open(vault_file_name) as f:
         # line_of_vault_data = f.readline()
@@ -54,9 +57,12 @@ def get_entry(master_passwd, vault_name, name):
         # all_entries_names.append(entries)
         
         
-    for e in all_entries_names:
+    for e in vault_data:
+        print(e)
+        print(f"{e.get("name", []) =}")
+        print(f"{name=}")
         # decrypt the name
         #----------> here
-        if e == name:
+        if (e.get("name", [])).decode("utf-8") == name:
             return e
     return None
