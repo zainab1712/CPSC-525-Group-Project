@@ -3,7 +3,7 @@ CPSC 525 F25 Group Project
 CWE-215: Insecure Exposure of Sensitive Information to an Unauthorized Actor
 
 Jahnissi Nwakanma - 
-Khadeeja Abbas - 
+Khadeeja Abbas - 30180776
 Shanza Raza - 
 Zainab Bari - 30154224
 
@@ -21,7 +21,9 @@ import os
 """Append a timestamped message to logfile.
 Returns the full path to the logfile."""
 def log_action(message: str, logfile: str = "vault.log"):
-    ts = datetime.datetime.isoformat() + "Z"
+    now = datetime.datetime.now()
+    
+    ts = now.isoformat(sep='T', timespec='auto') + "Z"
     entry = f"{ts} - {message}\n"
     with open(logfile, "a", encoding="utf-8") as f:
         f.write(entry)
@@ -29,9 +31,9 @@ def log_action(message: str, logfile: str = "vault.log"):
 
 
 """Handle the 'init' command."""
-def handle_init(master_passwd):
+def handle_init(vault_name, master_passwd):
     # Initialize a new vault with the given master password
-    vault = init_vault(master_passwd)
+    vault_dict = init_vault(vault_name, master_passwd)
 
     # Store the master password as a vault entry
     master_entry = create_entry(
@@ -40,13 +42,18 @@ def handle_init(master_passwd):
         secret=master_passwd,
         notes="Automatically stored master password"
     )
-    vault["entries"].append(master_entry)
+    print(master_entry)
+    # next_index = len(vault)
+    # print(next_index)
+    # vault.at[next_index, 'entries'] = master_entry
+    # vault_dict.(master_entry)
+    # print(f"{vault_dict=}")
 
     # Save the vault
-    save_vault(vault, master_passwd)
+    save_vault(master_entry, vault_name, master_passwd)
     print("[OK] Vault initialized.")
     log_action("Vault initialized successfully and master password stored as entry.")
-    return vault
+    return vault_name
 
 
 """Handle the 'add' command."""
@@ -56,6 +63,7 @@ def handle_add(vault, master_passwd):
         print("[!] No vault loaded.")
         return vault
 
+    print(vault)
     # Prompt user for entry details
     name = input("Entry name: ")
     username = input("Username: ")
@@ -63,8 +71,12 @@ def handle_add(vault, master_passwd):
     notes = input("Notes (optional): ")
 
     # Create and add the new entry to the vault
-    vault["entries"].append(create_entry(name, username, secret, notes))
-    save_vault(vault, master_passwd)
+    new_entry = create_entry(name, username, secret, notes)
+    # print(new_entry)
+    # vault["entries"].append(create_entry(name, username, secret, notes))
+    # save_vault(master_entry, vault_name, master_passwd)
+
+    save_vault(new_entry, vault, master_passwd)
     print(f"[OK] Entry '{name}' added.")
     log_action(f"Entry '{name}' added to the vault.")
     return vault
@@ -277,7 +289,7 @@ def main():
         elif choice.lower() in ("2", "init"):
             VAULT_FILE = input("Enter name for new vault file: ").strip()
             master_passwd = input("Enter master password for new vault: ").strip()
-            vault = handle_init(master_passwd)
+            vault = handle_init(VAULT_FILE, master_passwd)
             break  # Vault created, move to command loop
         
         # Handle opening an existing vault
@@ -310,7 +322,7 @@ def main():
             # Prompt for new vault filename and master password
             VAULT_FILE = input("Enter name for new vault file: ").strip()
             master_passwd = input("Enter new master password for this vault: ").strip()
-            vault = handle_init(master_passwd)
+            vault = handle_init(VAULT_FILE, master_passwd)
 
         elif command in ("2", "add"):
             vault = handle_add(vault, master_passwd)
