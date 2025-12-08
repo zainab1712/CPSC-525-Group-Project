@@ -13,6 +13,8 @@ Manages adding, deleting, listing, and getting vault entries.
 """
 import ast
 from vault import load_vault
+
+
 def create_entry(name, username, secret, notes):
     """Create a new vault entry."""
     return {
@@ -21,6 +23,7 @@ def create_entry(name, username, secret, notes):
         "secret": secret,
         "notes": notes,
     }
+
 
 def delete_entry(vault_data, name):
     """Delete an entry by name."""
@@ -33,36 +36,20 @@ def delete_entry(vault_data, name):
         count = count + 1
     return False
 
+
 def list_entries(master_passwd, vault_name):
     """List all entries in the vault."""
-    # entries = vault_data.get("entries", [])
-    # return entries
     vault_data = load_vault(vault_name, master_passwd)
     print(f"{vault_data=}")
     return vault_data
-    # return None
+
+
 def get_entry(master_passwd, vault_name, name):
     """Get details for a specific entry by name."""
-    # vault_file_name = str(vault_name) + ".csv"
-    # --- Decyrpt the data
+    # --- Decyrpt the data ---
     vault_data = load_vault(vault_name, master_passwd)
-    print(f"{vault_data=}") 
-    # all_entries_names = []
-    # print(f"{vault_data=}")
-    # with open(vault_file_name) as f:
-        # line_of_vault_data = f.readline()
-        # print(line_of_vault_data)
-        # line_of_vault_data = ast.literal_eval(line_of_vault_data)
-        # entries = line_of_vault_data.get("name", [])
-        # all_entries_names.append(entries)
-        
-        
+
     for e in vault_data:
-        print(e)
-        print(f"{e.get("name", []) =}")
-        print(f"{name=}")
-        # decrypt the name
-        #----------> here
         if (e.get("name", [])).decode("utf-8") == name:
             return e
     return None
