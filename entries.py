@@ -12,7 +12,7 @@ entries.py
 Manages adding, deleting, listing, and getting vault entries.
 """
 import ast
-
+from vault import load_vault
 def create_entry(name, username, secret, notes):
     """Create a new vault entry."""
     return {
@@ -38,16 +38,20 @@ def list_entries(vault_data):
     entries = vault_data.get("entries", [])
     return entries
 
-def get_entry(vault_name, name):
+def get_entry(master_passwd, vault_name, name):
     """Get details for a specific entry by name."""
-    vault_file_name = str(vault_name) + ".csv"
+    # vault_file_name = str(vault_name) + ".csv"
+    # --- Decyrpt the data
+    vault_data = load_vault(vault_name, master_passwd)
+    print(f"{vault_data=}") 
     all_entries_names = []
-    with open(vault_file_name) as f:
-        line_of_vault_data = f.readline()
-        print(line_of_vault_data)
-        line_of_vault_data = ast.literal_eval(line_of_vault_data)
-        entries = line_of_vault_data.get("name", [])
-        all_entries_names.append(entries)
+    # print(f"{vault_data=}")
+    # with open(vault_file_name) as f:
+        # line_of_vault_data = f.readline()
+        # print(line_of_vault_data)
+        # line_of_vault_data = ast.literal_eval(line_of_vault_data)
+        # entries = line_of_vault_data.get("name", [])
+        # all_entries_names.append(entries)
         
         
     for e in all_entries_names:

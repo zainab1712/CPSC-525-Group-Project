@@ -83,7 +83,7 @@ def handle_add(vault, master_passwd):
 
 
 """Handle the 'get' command."""
-def handle_get(vault):
+def handle_get(master_passwd, vault):
     # Check that the vault is loaded
     if vault is None:
         print("[!] No vault loaded.")
@@ -91,7 +91,7 @@ def handle_get(vault):
 
     # Prompt user for entry name
     name = input("Entry name: ")
-    entry = get_entry(vault, name)
+    entry = get_entry(master_passwd, vault, name)
     
     # If the entry exists, display its details
     if entry:
@@ -108,7 +108,7 @@ def handle_get(vault):
 
 
 """Handle the 'list' command."""
-def handle_list(vault):
+def handle_list(master_passwd, vault):
     # Check that the vault is loaded
     if vault is None:
         print("[!] No vault loaded.")
@@ -328,10 +328,12 @@ def main():
             vault = handle_add(vault, master_passwd)
 
         elif command in ("3", "get"):
-            handle_get(vault)
+            master_passwd = input("Enter the password for this vault: ").strip()
+            handle_get(master_passwd, vault)
 
         elif command in ("4", "list"):
-            handle_list(vault)
+            master_passwd = input("Enter the password for this vault: ").strip()
+            handle_list(master_passwd, vault)
 
         elif command in ("5", "delete"):
             vault = handle_delete(vault, master_passwd)

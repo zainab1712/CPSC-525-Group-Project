@@ -13,8 +13,10 @@ Handles creating, unlocking, reading, and writing the encrypted vault file.
 """
 import pandas as pd
 import csv
-from encrypt4 import encrypt
-
+# from encrypt4 import encrypt
+from encrypt3 import encrypt, decrypt
+import pickle
+import ast
 
 def init_vault(vault, master_password: str):
     """Create a new encrypted vault file using the master password."""
@@ -37,9 +39,36 @@ def init_vault(vault, master_password: str):
 
     return vault_dictionary
 
-def load_vault(master_password: str):
+def load_vault(vault, master_password: str):
     """Unlock and decrypt the existing vault file."""
-    pass
+    try:
+        vault_file_name = str(vault) + ".csv"
+        vault_data = ""
+        with open(vault_file_name, "r") as file:
+            encrypted_data = file.readline()
+            encrypted_data = ast.literal_eval(encrypted_data)
+
+            # encrytped_data = encrypted_data.decode('utf-8') 
+            print(encrypted_data)
+            try:
+                # decrypted_data = decrypt(master_password.encode("utf-8"), encrypted_data, decode = False)
+                decrypted_name = decrypt(master_password, encrypted_data['name'])
+                decrypted_username = decrypt(master_password, encrypted_data['username'])
+                decrypted_secret = decrypt(master_password, encrypted_data['secret']) 
+                decrypted_notes = decrypt(master_password, encrypted_data['notes'])
+                decrypted_dict = {'name':decrypted_name, 'username':decrypted_username, 'secret':decrypted_secret, 'notes':decrypted_notes}
+                print(f"{decrypted_dict=}")
+            #decrypted_data = decrypt_data(encrypt_data,master_password)
+            except ValueError as e:
+                print("Wrong password")
+                return None
+            vault_data += str(decrypted_dict)
+        return vault_data    
+    except Exception as e:
+        print(f"Failed to load vault: {e}")
+        raise
+    pass1
+    
 
 def save_vault(vault_data, vault_name, master_password: str):
     """Encrypt and save the vault data to the file."""
@@ -80,4 +109,6 @@ def encrypt_data(data, key):
 
 def decrypt_data(data, key):
     """Decrypt data using the provided key."""
+    
+    
     pass
