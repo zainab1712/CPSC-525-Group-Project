@@ -48,6 +48,7 @@ def handle_init(vault_name, master_passwd):
     )
 
     # Save the vault
+    print("master entry: ", master_entry)
     save_vault(master_entry, vault_name, master_passwd)
     print("[OK] Vault initialized.")
     log_action("Vault initialized successfully and master password stored as entry.")
@@ -141,7 +142,7 @@ def handle_delete(vault, master_passwd):
 
     # Prompt user for entry name to delete
     name = input("Entry name to delete: ")
-    entry = get_entry(vault, name)
+    entry = get_entry(master_passwd, vault, name)
     if entry is None:
         print(f"[!] Entry '{name}' not found.")
         log_action(f"Attempted to delete non-existent entry '{name}'.")
@@ -159,8 +160,8 @@ def handle_delete(vault, master_passwd):
         return vault
 
     # Delete the entry
-    if delete_entry(vault, name):
-        save_vault(vault, master_passwd)
+    if delete_entry(master_passwd, vault, name):
+        # save_vault(vault, master_passwd)
         print(f"[OK] Entry '{name}' deleted.")
         log_action(f"Entry '{name}' deleted from the vault.")
     return vault
