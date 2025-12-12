@@ -30,7 +30,7 @@ def delete_entry(master_passwd, vault_name, name):
     vault_data = load_vault(vault_name, master_passwd)
     print("VAULT DATA!!!! ",vault_data , "\n\n\n")
 
-    # opening the file with w+ mode truncates the file
+    # opening the file with w+ mode truncates the file, code for deleting contents from here: https://stackoverflow.com/questions/12277864/python-clear-csv-file
     vault_file_name = str(vault_name) + ".csv"  # get file name
 
     f = open(vault_file_name, "w+") # THIS SHOULD DELETE THE FILE CONTENTS NOT SURE
