@@ -63,8 +63,6 @@ def load_vault(vault, master_password: str):
     except Exception as e:
         print(f"Failed to load vault: {e}")
         raise
-    pass
-
 
 def save_vault(vault_data, vault_name, master_password: str):
     """Encrypt and save the vault data to the file."""

@@ -208,8 +208,12 @@ def handle_change_master(vault, master_passwd):
 """Handle the 'debug-dump' command."""
 
 
-def handle_debug_dump(vault):
+def handle_debug_dump(vault, master_passwd):
     # If no vault is loaded, prompt for a vault file to dump
+    try:
+        vaultt = load_vault(vault, master_passwd)
+    except:
+        pass
     if vault is None:
         vault_file = input(
             "No vault loaded. Enter vault filename to debug-dump: "
@@ -247,12 +251,13 @@ def handle_debug_dump(vault):
 
     # Execute the dump
     print("\n=== DEBUG DUMP (Decrypted Vault Contents) ===")
-    for entry in vault.get("entries", []):
-        print(f"Name: {entry.get('name')}")
-        print(f"Username: {entry.get('username')}")
-        print(f"Secret: {entry.get('secret')}")
-        print(f"Notes: {entry.get('notes')}")
-        print("-" * 40)
+    # for entry in vault.get("entries", []):
+    #     print(f"Name: {entry.get('name')}")
+    #     print(f"Username: {entry.get('username')}")
+    #     print(f"Secret: {entry.get('secret')}")
+    #     print(f"Notes: {entry.get('notes')}")
+    #     print("-" * 40)
+    print(vaultt)
     print("=== END OF DUMP ===\n")
 
     # Log the action
@@ -306,7 +311,7 @@ def main():
 
         # Handle debug-dump without loading a vault
         elif choice.lower() in ("3", "debug-dump"):
-            handle_debug_dump(vault)
+            handle_debug_dump(vault, master_passwd)
             continue
 
         # Handle vault initialization
@@ -365,14 +370,12 @@ def main():
         elif command in ("6", "change-master"):
             master_passwd = handle_change_master(vault, master_passwd)
 
+        elif command in ("7", "debug-dump"):
+            handle_debug_dump(vault, master_passwd)
+
         elif command in ("8", "quit"):
-            print("Saving vault and exiting...")
-            if vault:
-                save_vault(vault, master_passwd)
-                break
-            else:
-                print("No vault to save. Exiting.")
-                break
+            print("Exiting...")
+            break
 
         else:
             print("[!] Unknown command. Please choose from the menu options.")
