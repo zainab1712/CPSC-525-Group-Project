@@ -18,6 +18,8 @@ from entries import create_entry, delete_entry, get_entry, list_entries
 import os
 # https://docs.python.org/3/library/pickle.html
 import pickle
+import secrets
+import string
 
 DEBUG_DUMP_PASSWORD = "debugdump123"
 
@@ -67,11 +69,21 @@ def handle_add(vault_data: list, master_passwd: str, vault_filename: str) -> lis
         print("[!] No vault loaded.")
         return vault_data
 
-    # print(vault)
     # Prompt user for entry details
     name = input("Entry name: ").strip()
     username = input("Username: ").strip()
-    secret = input("Secret: ").strip()
+    # secret = input("Secret: ").strip()
+    
+    secret_choice = input("Secret: (press Enter to generate strong password) ").strip()
+    if not secret_choice:
+        print("Generating password...")
+        secret = handle_generate()  # Returns the final password
+        if not secret:
+            print("[!] Password generation cancelled.")
+            return vault_data
+    else:
+        secret = secret_choice
+    
     notes = input("Notes (optional): ").strip()
 
     # Create and add the new entry to the vault
@@ -84,6 +96,84 @@ def handle_add(vault_data: list, master_passwd: str, vault_filename: str) -> lis
     print(f"[OK] Entry '{name}' added.")
     log_action(f"Entry '{name}' added to the vault.")
     return vault_data + [new_entry]
+
+
+"""Handle the 'generate' command."""
+
+def handle_generate():
+    print("\n=== Password Generator ===")
+
+    # Ask for length with validation
+    while True:
+        length_input = input("How many characters long? (default 20, min 12, max 128): ").strip()
+        if not length_input:
+            length = 20
+            break
+        try:
+            length = int(length_input)
+            if length < 12:
+                print("[!] Password too short, minimum recommended is 12. Using 12.")
+                length = 12
+            elif length > 128:
+                print("[!] Password too long, maximum is 128. Using 128.")
+                length = 128
+            break
+        except ValueError:
+            print("[!] Please enter a valid number.")
+
+    # Character set options
+    print("\nInclude these character types? (y/n for each) (all will be included by default if none selected)")
+    use_upper = input("  Uppercase letters (A-Z)? (y/n): ").strip().lower() != "n"
+    use_lower = input("  Lowercase letters (a-z)? (y/n): ").strip().lower() != "n"
+    use_digits = input("  Digits (0-9)? (y/n): ").strip().lower() != "n"
+    use_symbols = input("  Symbols (!@#$%^&* etc.)? (y/n): ").strip().lower() == "y"
+
+    # Select all if user does not choose any
+    if not (use_upper or use_lower or use_digits or use_symbols):
+        print("[!] No character types selected, enabling all for security.")
+        use_upper = use_lower = use_digits = use_symbols = True
+
+    while True:
+        
+        # Generate the password
+        password = generate_password(
+            length=length,
+            include_uppercase=use_upper,
+            include_lowercase=use_lower,
+            include_digits=use_digits,
+            include_symbols=use_symbols
+        )
+        print("\nGenerated Password:")
+        print(password)
+        log_action(f"[LOG] Generated random password: length={len(password)}, upper={use_upper}, lower={use_lower}, digits={use_digits}, symbols={use_symbols}")
+        
+        while True:
+            confirm = input("\nUse this password? (y = yes, n = no, r = regenerate new one): ").strip().lower()
+            
+            # Accept the generated password
+            if confirm == "y":
+                return password
+            
+            # Generate a new password
+            elif confirm == "r":
+                break
+            
+            # Manually enter a password or retry generation
+            elif confirm == "n":
+                choice = input("Do you want to (r)egenerate or (m)anually enter a password? (r/m): ").strip().lower()
+                if choice == "r":
+                    break
+                elif choice == "m":
+                    manual = input("Enter your own password: ").strip()
+                    if manual:
+                        return manual
+                    else:
+                        print("[!] Password cannot be empty. Try again.")
+                else:
+                    print("[!] Invalid choice — please type 'r' or 'm'.")
+            
+            else:
+                print("[!] Invalid choice — please type 'y', 'n', or 'r'.")
 
 
 """Handle the 'get' command."""
@@ -285,20 +375,66 @@ def handle_debug_dump(vault_data: list | None, vault_filename: str | None):
     logpath = log_action("Debug dump executed on vault.")
     print(f"[LOG] Debug dump recorded to: {logpath}")
 
+
+def generate_password(length=20,
+                     include_uppercase=True,
+                     include_lowercase=True,
+                     include_digits=True,
+                     include_symbols=True) -> str:
+
+    # Define the password alphabet
+    lowercase = string.ascii_lowercase
+    uppercase = string.ascii_uppercase
+    digits    = string.digits
+    symbols   = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+
+    password_alphabet = ""
+    user_choice = []
+
+    if include_lowercase:
+        password_alphabet += lowercase
+        user_choice.append(secrets.choice(lowercase))
+    if include_uppercase:
+        password_alphabet += uppercase
+        user_choice.append(secrets.choice(uppercase))
+    if include_digits:
+        password_alphabet += digits
+        user_choice.append(secrets.choice(digits))
+    if include_symbols:
+        password_alphabet += symbols
+        user_choice.append(secrets.choice(symbols))
+
+    # Fallback if no character types selected (even though this is checked in handle_generate)
+    if not password_alphabet:
+        password_alphabet = lowercase + uppercase + digits + symbols
+        user_choice = [secrets.choice(password_alphabet)]
+
+    # Build the password, making sure to include at least one of each category selected
+    password_chars = user_choice[:]
+    for _ in range(length - len(user_choice)):
+        password_chars.append(secrets.choice(password_alphabet))
+
+    # Shuffle it so that the user_choice characters are not all at the start
+    secrets.SystemRandom().shuffle(password_chars)
+
+    # Return the final password
+    return "".join(password_chars)
+
+
+
 """Menu display function."""
-
-
 def show_menu():
     """Display main command menu."""
     print("\n=== Password Vault Commands ===")
     print("1. init (Initialize a new vault)")
     print("2. add (Add an entry)")
-    print("3. get (Get an entry)")
-    print("4. list (List entries)")
-    print("5. delete (Delete an entry)")
-    print("6. change-master (Change master password)")
-    print("7. debug-dump (Unsafe decrypted dump)")
-    print("8. quit (End program)\n")
+    print("3. generate (Generate a strong random password)")
+    print("4. get (Get an entry)")
+    print("5. list (List entries)")
+    print("6. delete (Delete an entry)")
+    print("7. change-master (Change master password)")
+    print("8. debug-dump (Unsafe decrypted dump)")
+    print("9. quit (End program)\n")
     print("Enter a command, e.g. add, or a number, e.g. 2, from the menu.")
 
 
@@ -384,26 +520,29 @@ def main():
 
         elif command in ("2", "add"):
             vault_data = handle_add(vault_data, master_passwd, vault_filename)
+        
+        elif command in ("3", "generate"):
+            handle_generate()
 
-        elif command in ("3", "get"):
+        elif command in ("4", "get"):
             handle_get(master_passwd, vault_filename)
 
-        elif command in ("4", "list"):
+        elif command in ("5", "list"):
             handle_list(master_passwd, vault_filename)         
 
-        elif command in ("5", "delete"):
+        elif command in ("6", "delete"):
             vault_data = handle_delete(vault_data, master_passwd, vault_filename)
 
-        elif command in ("6", "change-master"):
+        elif command in ("7", "change-master"):
             new_pass = handle_change_master(vault_filename, vault_data, master_passwd)
             if new_pass != master_passwd:
                 master_passwd = new_pass
                 vault_data = load_vault(vault_filename, master_passwd)  # Reload with new password
 
-        elif command in ("7", "debug-dump"):
+        elif command in ("8", "debug-dump"):
             handle_debug_dump(vault_data, vault_filename)
 
-        elif command in ("8", "quit"):
+        elif command in ("9", "quit"):
             print("Exiting...")
             break
 
