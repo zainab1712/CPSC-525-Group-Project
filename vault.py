@@ -72,9 +72,6 @@ def load_vault(vault_filename: str, master_password: str) -> list[dict] | None:
         
         return vault_data
     
-    except FileNotFoundError:
-        print(f"[!] Vault file '{vault_file_name}' not found.")
-        return None
     except Exception as e:
         print(f"Failed to load vault: {e}")
         raise
@@ -109,12 +106,7 @@ def change_master_password(vault_filename: str, old_password: str, new_password:
     # Update/add the master password entry
     master_found = False
     for entry in entries:
-               except FileNotFoundError:
-            print(f"[!] Vault file '{vault_file_name}' not found.")
-            return None
-        except Exception as e:
-            print(f"Failed to load vault: {e}")
-            raise if entry["name"] == "__MASTER_PASSWORD__":
+        if entry["name"] == "__MASTER_PASSWORD__":
             entry["secret"] = new_password
             master_found = True
 

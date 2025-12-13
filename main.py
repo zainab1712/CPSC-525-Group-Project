@@ -285,44 +285,33 @@ def handle_edit(vault_data: list, master_passwd: str, vault_filename: str) -> li
 
     if entry:
         try:
-            # get the original values
-            valut_data = load_vault(vault_filename, master_passwd)
-
-        except FileNotFoundError:
-            print(f"[!] Vault file '{vault_file_name}' not found.")
-            return None
-        except Exception as e:
-            print(f"Failed to load vault: {e}")
-            raise
-        
-        try:
             # ask for changes for the name
             edit_name = input("  Edit the name? (y/n): ").strip().lower() == "y"
             if edit_name:
                 name_change = input("  Input change: ").strip().lower()
             else:
-                name_change = vault_data["name"]
+                name_change = entry["name"]
             
             # ask for changes for the username
             edit_username = input("  Edit the username? (y/n): ").strip().lower() == "y"
             if edit_username:
                 username_change = input("  Input change: ").strip().lower()
             else:
-                username_change = vault_data["username"]
+                username_change = entry["username"]
                 
             # ask for changes for the username
             edit_secret = input("  Edit the secret? (y/n): ").strip().lower() == "y"
             if edit_secret:
                 secret_change = input("  Input change: ").strip().lower()
             else:
-                secret_change = vault_data["secret"]
+                secret_change = entry["secret"]
                 
             # ask for changes for the notes
             edit_notes = input("  Edit the notes? (y/n): ").strip().lower() == "y"
             if edit_notes:
                 notes_change = input("  Input change: ").strip().lower()
             else:
-                notes_change = vault_data["notes"]
+                notes_change = entry["notes"]
                 
             # creating a new dictionary to replace the old entry
             changed_entry = create_entry(name_change, username_change, secret_change, notes_change)
@@ -336,10 +325,17 @@ def handle_edit(vault_data: list, master_passwd: str, vault_filename: str) -> li
             return 
         except FileNotFoundError:
             print(f"[!] Vault file '{vault_file_name}' not found.")
+            log_action(f"Failed to find entry '{name}'.")
+
             return None
         except Exception as e:
-            print(f"Failed to load vault: {e}")
+            print(f"Failed to edit vault: {e}")
+            log_action(f"Failed to edit entry '{name}'.")
             raise
+    else:
+        print(f"[!] Entry '{name}' not found.")
+        log_action(f"Attempted to retrieve non-existent entry '{name}'.")
+  
         
 """Handle the 'change-master' command."""
 
