@@ -296,7 +296,7 @@ def main():
     # Startup vault menu
     while True:
         print("\n=== Vault Menu ===")
-        print("1. Open an existing vault (enter the vault filename)")
+        print("1. Open an existing vault (enter the vault filename without the csv)")
         print("2. init (Initialize a new vault)")
         print("3. debug-dump (Unsafe decrypted dump)")
         print("4. quit (End program)\n")
@@ -327,13 +327,13 @@ def main():
             VAULT_FILE = choice
 
             # Check that the vault file exists
-            if not os.path.exists(VAULT_FILE):
+            if not os.path.exists(VAULT_FILE+".csv"):
                 print(f"[!] Vault file '{VAULT_FILE}' does not exist.")
                 continue
 
             # Prompt for master password and attempt to load vault
             master_passwd = input(f"Enter master password for '{VAULT_FILE}': ").strip()
-            vault = load_vault(master_passwd)
+            vault = load_vault(VAULT_FILE, master_passwd)
             if vault:
                 print(f"[OK] Vault '{VAULT_FILE}' unlocked successfully.")
                 break
