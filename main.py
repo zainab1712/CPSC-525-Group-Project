@@ -13,9 +13,11 @@ Handles the different commands and their functionalities.
 """
 
 import datetime
-from vault import init_vault, load_vault, save_vault  # , change_master_password
+from vault import init_vault, load_vault, save_vault, change_master_password
 from entries import create_entry, delete_entry, get_entry, list_entries
 import os
+# https://docs.python.org/3/library/pickle.html
+import pickle
 
 
 """Append a timestamped message to logfile.
@@ -35,9 +37,9 @@ def log_action(message: str, logfile: str = "vault.log"):
 """Handle the 'init' command."""
 
 
-def handle_init(vault_name, master_passwd):
+def handle_init(vault_filename: str, master_passwd: str) -> str:
     # Initialize a new vault with the given master password
-    vault_dict = init_vault(vault_name, master_passwd)
+    init_vault(vault_filename, master_passwd)
 
     # Store the master password as a vault entry
     master_entry = create_entry(
@@ -49,50 +51,49 @@ def handle_init(vault_name, master_passwd):
 
     # Save the vault
     print("master entry: ", master_entry)
-    save_vault(master_entry, vault_name, master_passwd)
+    save_vault(master_entry, vault_filename, master_passwd)
     print("[OK] Vault initialized.")
     log_action("Vault initialized successfully and master password stored as entry.")
-    return vault_name
+    return vault_filename
 
 
 """Handle the 'add' command."""
 
 
-def handle_add(vault, master_passwd):
-    # Check that the vault is loaded
-    if vault is None:
+def handle_add(vault_data: list, master_passwd: str, vault_filename: str) -> list:    # Check that the vault is loaded
+    if vault_data is None or vault_filename is None:
         print("[!] No vault loaded.")
-        return vault
+        return vault_data
 
-    print(vault)
+    # print(vault)
     # Prompt user for entry details
-    name = input("Entry name: ")
-    username = input("Username: ")
-    secret = input("Secret: ")
-    notes = input("Notes (optional): ")
+    name = input("Entry name: ").strip()
+    username = input("Username: ").strip()
+    secret = input("Secret: ").strip()
+    notes = input("Notes (optional): ").strip()
 
     # Create and add the new entry to the vault
     new_entry = create_entry(name, username, secret, notes)
 
     # save addition
-    save_vault(new_entry, vault, master_passwd)
+    save_vault(new_entry, vault_filename, master_passwd)
     print(f"[OK] Entry '{name}' added.")
     log_action(f"Entry '{name}' added to the vault.")
-    return vault
+    return vault_data + [new_entry]
 
 
 """Handle the 'get' command."""
 
 
-def handle_get(master_passwd, vault):
+def handle_get(master_passwd: str, vault_filename: str):
     # Check that the vault is loaded
-    if vault is None:
+    if vault_filename is None:
         print("[!] No vault loaded.")
         return
 
     # Prompt user for entry name
     name = input("Entry name: ")
-    entry = get_entry(master_passwd, vault, name)
+    entry = get_entry(master_passwd, vault_filename, name)
 
     # If the entry exists, display its details
     if entry:
@@ -111,14 +112,14 @@ def handle_get(master_passwd, vault):
 """Handle the 'list' command."""
 
 
-def handle_list(master_passwd, vault):
+def handle_list(master_passwd: str, vault_filename: str):
     # Check that the vault is loaded
-    if vault is None:
+    if vault_filename is None:
         print("[!] No vault loaded.")
         return
 
     # List all entries in the vault
-    entries = list_entries(master_passwd, vault)
+    entries = list_entries(master_passwd, vault_filename)
     if entries:
         print("Entries in vault:")
         for e in entries:
@@ -133,20 +134,20 @@ def handle_list(master_passwd, vault):
 """Handle the 'delete' command."""
 
 
-def handle_delete(vault, master_passwd):
+def handle_delete(vault_data: list, master_passwd: str, vault_filename: str) -> list:
     # Check that the vault is loaded
-    if vault is None:
+    if vault_filename is None:
         print("[!] No vault loaded.")
         log_action("Attempted to delete entry, but no vault loaded.")
-        return vault
+        return vault_data
 
     # Prompt user for entry name to delete
-    name = input("Entry name to delete: ")
-    entry = get_entry(master_passwd, vault, name)
+    name = input("Entry name to delete: ").strip()
+    entry = get_entry(master_passwd, vault_filename, name)
     if entry is None:
         print(f"[!] Entry '{name}' not found.")
         log_action(f"Attempted to delete non-existent entry '{name}'.")
-        return vault
+        return vault_data
 
     # Confirm deletion
     confirm = (
@@ -157,83 +158,87 @@ def handle_delete(vault, master_passwd):
     if confirm != "y":
         print(f"Deletion of '{name}' cancelled.")
         log_action(f"Deletion of entry '{name}' cancelled by user.")
-        return vault
+        return vault_data
 
     # Delete the entry
-    if delete_entry(master_passwd, vault, name):
-        # save_vault(vault, master_passwd)
+    success = delete_entry(master_passwd, vault_filename, name)
+    if success:
         print(f"[OK] Entry '{name}' deleted.")
         log_action(f"Entry '{name}' deleted from the vault.")
-    return vault
+        # Reload data to reflect deletion
+        return load_vault(vault_filename, master_passwd)
+    else:
+        print(f"[!] Failed to delete entry '{name}'.")
+        return vault_data
 
 
 """Handle the 'change-master' command."""
 
+def handle_change_master(vault_filename: str, vault_data: list, master_passwd: str) -> str:
+    if vault_filename is None or vault_data is None:
+        print("[!] No vault loaded.")
+        log_action("Attempted to change master password, but no vault loaded.")
+        return master_passwd
 
-def handle_change_master(vault, master_passwd):
-    # # Check that the vault is loaded
-    # if vault is None:
-    #     print("[!] No vault loaded.")
-    #     log_action("Attempted to change master password, but no vault loaded.")
-    #     return master_passwd
+    confirm = input(
+        "Are you sure you want to change the master password? (y/n): "
+    ).strip().lower()
 
-    # # Confirm that user wants to change the master password
-    # confirm = input(
-    #     "Are you sure you want to change the master password? (y/n): "
-    # ).strip().lower()
-    # if confirm != "y":
-    #     print("Master password change cancelled.")
-    #     log_action("Master password change cancelled by user.")
-    #     return master_passwd
+    if confirm != "y":
+        print("Master password change cancelled.")
+        return master_passwd
 
-    # # Prompt user for a new master password, and ask them to retype it
-    # new_pass = input("Enter new master password: ").strip()
-    # retype_pass = input("Re-enter new master password: ").strip()
+    current = input("Enter current master password: ").strip()
+    if current != master_passwd:
+        print("[!] Incorrect current master password.")
+        return master_passwd
 
-    # # If the two inputs do not match, don't change the password
-    # if new_pass != retype_pass:
-    #     print("[!] Passwords do not match. Master password not changed.")
-    #     log_action("Master password change failed: passwords did not match.")
-    #     return master_passwd
+    new_pass = input("Enter new master password: ").strip()
+    retype = input("Re-enter new master password: ").strip()
 
-    # # Change the master password
-    # change_master_password(vault, master_passwd, new_pass)
-    # print("[OK] Master password updated successfully.")
-    # log_action("Master password changed successfully.")
-    # return new_pass
-    print("[!] Currently not implemented.")
-    return master_passwd
+    if new_pass != retype:
+        print("[!] Passwords do not match.")
+        return master_passwd
+
+    success = change_master_password(vault_filename, master_passwd, new_pass)
+    if not success:
+        print("[!] Failed to change master password.")
+        return master_passwd
+
+    print("[OK] Master password updated successfully.")
+    log_action("Master password changed successfully.")
+    return new_pass
+
+
 
 
 """Handle the 'debug-dump' command."""
 
 
-def handle_debug_dump(vault, master_passwd):
+def handle_debug_dump(vault_data: list, master_passwd: str, vault_filename: str):
     # If no vault is loaded, prompt for a vault file to dump
-    try:
-        vaultt = load_vault(vault, master_passwd)
-    except:
-        pass
-    if vault is None:
-        vault_file = input(
-            "No vault loaded. Enter vault filename to debug-dump: "
-        ).strip()
+    # try:
+    #     vaultt = load_vault(vault, master_passwd)
+    # except:
+    #     pass
+    if vault_filename is None:
+        vault_file = input("No vault loaded. Enter vault filename to debug-dump: ").strip()
+        vault_file = vault_file if vault_file.endswith(".csv") else vault_file + ".csv"
         if not os.path.exists(vault_file):
             print(f"[!] Vault file '{vault_file}' does not exist.")
             return
         # Load vault without master password (unsafe)
-        # https://docs.python.org/3/library/pickle.html
-        import pickle
-
         try:
             with open(vault_file, "rb") as f:
-                vault = pickle.load(f)
+                dumped = pickle.load(f)
             print(
                 f"[OK] Vault '{vault_file}' loaded for debug-dump (no master password)."
             )
         except Exception as e:
             print(f"[!] Failed to load vault: {e}")
             return
+    else:
+        dumped = vault_data
 
     # Prompt user for confirmation
     confirm = (
@@ -251,13 +256,7 @@ def handle_debug_dump(vault, master_passwd):
 
     # Execute the dump
     print("\n=== DEBUG DUMP (Decrypted Vault Contents) ===")
-    # for entry in vault.get("entries", []):
-    #     print(f"Name: {entry.get('name')}")
-    #     print(f"Username: {entry.get('username')}")
-    #     print(f"Secret: {entry.get('secret')}")
-    #     print(f"Notes: {entry.get('notes')}")
-    #     print("-" * 40)
-    print(vaultt)
+    print(dumped)
     print("=== END OF DUMP ===\n")
 
     # Log the action
@@ -279,7 +278,7 @@ def show_menu():
     print("6. change-master (Change master password)")
     print("7. debug-dump (Unsafe decrypted dump)")
     print("8. quit (End program)\n")
-    print("Enter a command, e.g. add")
+    print("Enter a command, e.g. add, or a number, e.g. 2, from the menu.")
 
 
 """Main program loop. Displays menu and handles user commands."""
@@ -289,9 +288,9 @@ def main():
     print("=== Welcome to the Password Vault ===")
 
     # Initial variables for vault management
-    vault = None
-    VAULT_FILE = None
-    master_passwd = None
+    vault_filename: str | None = None
+    vault_data: list | None = None
+    master_passwd: str | None = None
 
     # Startup vault menu
     while True:
@@ -311,35 +310,43 @@ def main():
 
         # Handle debug-dump without loading a vault
         elif choice.lower() in ("3", "debug-dump"):
-            handle_debug_dump(vault, master_passwd)
+            handle_debug_dump(vault_data, master_passwd, vault_filename)
             continue
 
         # Handle vault initialization
         elif choice.lower() in ("2", "init"):
-            VAULT_FILE = input("Enter name for new vault file: ").strip()
+            vault_filename = input("Enter name for new vault file: ").strip()
             master_passwd = input("Enter master password for new vault: ").strip()
-            vault = handle_init(VAULT_FILE, master_passwd)
-            break  # Vault created, move to command loop
+            handle_init(vault_filename, master_passwd)
+            vault_data = load_vault(vault_filename, master_passwd)
+            if vault_data is not None:
+                print(f"[OK] Vault '{vault_filename}.csv' created and unlocked.")
+                break  # Vault created, move to command loop
+            else:
+                vault_filename = None
+                master_passwd = None
 
         # Handle opening an existing vault
         else:
             # Assume user entered a vault filename
-            VAULT_FILE = choice
+            vault_filename = choice
 
             # Check that the vault file exists
-            if not os.path.exists(VAULT_FILE):
-                print(f"[!] Vault file '{VAULT_FILE}' does not exist.")
+            file_path = vault_filename + ".csv"
+            if not os.path.exists(file_path):
+                print(f"[!] Vault file '{file_path}' does not exist.")
                 continue
-
+            
             # Prompt for master password and attempt to load vault
-            master_passwd = input(f"Enter master password for '{VAULT_FILE}': ").strip()
-            vault = load_vault(master_passwd)
-            if vault:
-                print(f"[OK] Vault '{VAULT_FILE}' unlocked successfully.")
+            master_passwd = input(f"Enter master password for '{file_path}': ").strip()
+            vault_data = load_vault(vault_filename, master_passwd)
+            if vault_data is not None:
+                print(f"[OK] Vault '{vault_filename}.csv' unlocked successfully.")
                 break
             else:
                 print("[!] Incorrect password or corrupt vault.")
-                vault = None
+                vault_filename = None
+                master_passwd = None
 
     # Command loop
     while True:
@@ -349,29 +356,31 @@ def main():
 
         if command in ("1", "init"):
             # Prompt for new vault filename and master password
-            VAULT_FILE = input("Enter name for new vault file: ").strip()
-            master_passwd = input("Enter new master password for this vault: ").strip()
-            vault = handle_init(VAULT_FILE, master_passwd)
+            vault_filename = input("Enter name for new vault file: ").strip()
+            master_passwd = input("Enter new master password: ").strip()
+            handle_init(vault_filename, master_passwd)
+            vault_data = load_vault(vault_filename, master_passwd)
 
         elif command in ("2", "add"):
-            vault = handle_add(vault, master_passwd)
+            vault_data = handle_add(vault_data, master_passwd, vault_filename)
 
         elif command in ("3", "get"):
-            master_passwd = input("Enter the password for this vault: ").strip()
-            handle_get(master_passwd, vault)
+            handle_get(master_passwd, vault_filename)
 
         elif command in ("4", "list"):
-            master_passwd = input("Enter the password for this vault: ").strip()
-            handle_list(master_passwd, vault)
+            handle_list(master_passwd, vault_filename)         
 
         elif command in ("5", "delete"):
-            vault = handle_delete(vault, master_passwd)
+            vault_data = handle_delete(vault_data, master_passwd, vault_filename)
 
         elif command in ("6", "change-master"):
-            master_passwd = handle_change_master(vault, master_passwd)
+            new_pass = handle_change_master(vault_filename, vault_data, master_passwd)
+            if new_pass != master_passwd:
+                master_passwd = new_pass
+                vault_data = load_vault(vault_filename, master_passwd)  # Reload with new password
 
         elif command in ("7", "debug-dump"):
-            handle_debug_dump(vault, master_passwd)
+            handle_debug_dump(vault_data, master_passwd, vault_filename)
 
         elif command in ("8", "quit"):
             print("Exiting...")

@@ -31,9 +31,8 @@ def encrypt(key, source, encode=True):
 
     encryptor = AES.new(key, AES.MODE_CBC, IV)
     padding = AES.block_size - len(source) % AES.block_size  # calculate needed padding
-    source += (bytes([padding]) * padding).decode(
-        "utf-8"
-    )  # Python 2.x: source += chr(padding) * padding
+    # Use chr() repetition instead of bytes.decode()
+    source += chr(padding) * padding # Python 2.x: source += chr(padding) * padding
     data = IV + encryptor.encrypt(
         source.encode("utf-8")
     )  # store the IV at the beginning and encrypt
@@ -55,7 +54,7 @@ def decrypt(key, source, decode=True):
         data[-padding:] != bytes([padding]) * padding
     ):  # Python 2.x: chr(padding) * padding
         raise ValueError("Invalid padding...")
-    return data[:-padding]  # remove the padding
+    return data[:-padding].decode("utf-8")  # remove the padding
 
 
 def main():

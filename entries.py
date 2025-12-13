@@ -11,55 +11,76 @@ Zainab Bari - 30154224
 entries.py
 Manages adding, deleting, listing, and getting vault entries.
 """
-import ast
 from vault import load_vault, save_vault
 
 
-def create_entry(name, username, secret, notes):
+def create_entry(name: str, username: str, secret: str, notes: str = "") -> dict:
     """Create a new vault entry."""
     return {
         "name": name,
         "username": username,
         "secret": secret,
-        "notes": notes,
+        "notes": notes or "",  # so notes is always a string
     }
 
 
-def delete_entry(master_passwd, vault_name, name):
+def delete_entry(master_passwd: str, vault_filename: str, name: str) -> bool:
     """Delete an entry by name."""
-    vault_data = load_vault(vault_name, master_passwd)
+    vault_data = load_vault(vault_filename, master_passwd)
+    if vault_data is None:
+        return False
     print("VAULT DATA!!!! ",vault_data , "\n\n\n")
 
-    # opening the file with w+ mode truncates the file, code for deleting contents from here: https://stackoverflow.com/questions/12277864/python-clear-csv-file
-    vault_file_name = str(vault_name) + ".csv"  # get file name
-
-    f = open(vault_file_name, "w+") # THIS SHOULD DELETE THE FILE CONTENTS NOT SURE
-    f.close()
-    
-    flag = False
-    for idx, e in enumerate(vault_data):
-        if (e.get("name", [])).decode("utf-8") == name:
-            flag = True
+    # Find and separate the entry to delete
+    remaining_entries = []
+    deleted = False
+    for entry in vault_data:
+        if entry["name"] == name:
+            deleted = True
         else:
-            print("this is e: ",e)
-            for key, value in e.items():
-                e[key] = value.decode("utf-8")
-            save_vault(e, vault_name, master_passwd)
-    return flag
+            remaining_entries.append(entry)
 
-def list_entries(master_passwd, vault_name):
+    if not deleted:
+        return False
+    
+    # opening the file with w+ mode truncates the file, code for deleting contents from here: https://stackoverflow.com/questions/12277864/python-clear-csv-file
+    vault_file_name = vault_filename + ".csv"  # get file name
+
+    try:
+        with open(vault_file_name, "w", encoding="utf-8"):  # THIS SHOULD DELETE THE FILE CONTENTS NOT SURE
+            pass
+    except Exception as e:
+        print(f"[!] Failed to clear vault file during delete: {e}")
+        return False
+
+    # Re-save all the remaining entries
+    try:
+        for entry in remaining_entries:
+            save_vault(entry, vault_filename, master_passwd)
+        return True
+    except Exception as e:
+        print(f"[!] Failed to re-save entries after deletion: {e}")
+        return False
+
+def list_entries(master_passwd: str, vault_filename: str) -> list[dict]:
     """List all entries in the vault."""
-    vault_data = load_vault(vault_name, master_passwd)
-    print(f"{vault_data=}")
+    vault_data = load_vault(vault_filename, master_passwd)
+    if vault_data is None:
+        return []
+    # print(f"{vault_data=}")
     return vault_data
 
 
-def get_entry(master_passwd, vault_name, name):
+def get_entry(master_passwd: str, vault_filename: str, name: str) -> dict | None:
     """Get details for a specific entry by name."""
     # --- Decyrpt the data ---
-    vault_data = load_vault(vault_name, master_passwd)
+    vault_data = load_vault(vault_filename, master_passwd)
 
+    if vault_data is None:
+        return None
+    
     for e in vault_data:
-        if (e.get("name", [])).decode("utf-8") == name:
+        if e["name"] == name:
             return e
+    
     return None

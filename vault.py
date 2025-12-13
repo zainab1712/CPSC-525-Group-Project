@@ -12,33 +12,38 @@ vault.py
 Handles creating, unlocking, reading, and writing the encrypted vault file.
 """
 import pandas as pd
-import csv
 from encrypt3 import encrypt, decrypt
-import pickle
 import ast
+import os
 
 
-def init_vault(vault, master_password: str):
+def init_vault(vault_filename: str, master_password: str) -> None:
     """Create a new encrypted vault file using the master password."""
-    vault_file_name = str(vault) + ".csv"  # create csv file name
-    f = open(vault_file_name, "w", newline="")  # create file
-    vault_dictionary = {}  # redundant
-    return vault_dictionary
+    vault_file_name = vault_filename + ".csv"  # create csv file name
+    with open(vault_file_name, "w", encoding="utf-8") as f:
+        pass  # just create an empty file
 
 
-def load_vault(vault, master_password: str):
+def load_vault(vault_filename: str, master_password: str) -> list[dict] | None:
     """Unlock and decrypt the existing vault file."""
+    
+    vault_file_name = vault_filename + ".csv"
+    
     try:
-        vault_file_name = str(vault) + ".csv"  # get file name
         vault_data = []
-        with open(vault_file_name, "r") as file:
+        with open(vault_file_name, "r", encoding="utf-8") as file:
             while (
                 line := file.readline()
             ):  # safer to go line by line than just doing read()
-                encrypted_data = line
-                encrypted_data = ast.literal_eval(
-                    encrypted_data
-                )  # make the 'str' be read as a dict
+                line = line.strip()
+                if not line:  # Skip blank lines
+                    continue
+                try:
+                    encrypted_data = ast.literal_eval(line) # make the 'str' be read as a dict
+                except (ValueError, SyntaxError) as e:
+                    print(f"[!] Invalid line in vault file (corrupted?): {e}")
+                    return None  
+                
                 try:
                     # decrypt all the encrypted values
                     decrypted_name = decrypt(master_password, encrypted_data["name"])
@@ -55,22 +60,35 @@ def load_vault(vault, master_password: str):
                         "secret": decrypted_secret,
                         "notes": decrypted_notes,
                     }
-                except ValueError as e:
-                    print("Wrong password")
+                
+                except ValueError:
+                    print("[!] Wrong master password.")
                     return None
+                except KeyError as e:
+                    print(f"[!] Missing field in encrypted entry: {e}")
+                    return None
+                except Exception as e:
+                    print(f"[!] Decryption error: {e}")
+                    return None
+                
                 vault_data.append((decrypted_dict))
+        
         return vault_data
+    
+    except FileNotFoundError:
+        print(f"[!] Vault file '{vault_file_name}' not found.")
+        return None
     except Exception as e:
         print(f"Failed to load vault: {e}")
         raise
 
-def save_vault(vault_data, vault_name, master_password: str):
+def save_vault(entry: dict, vault_filename: str, master_password: str) -> None:
     """Encrypt and save the vault data to the file."""
     # the given vault data is a dictionary, this takes the values of the dict and encrypts them
-    encrypted_name = encrypt(master_password, vault_data["name"])
-    encrypted_username = encrypt(master_password, vault_data["username"])
-    encrypted_secret = encrypt(master_password, vault_data["secret"])
-    encrypted_notes = encrypt(master_password, vault_data["notes"])
+    encrypted_name = encrypt(master_password, entry["name"])
+    encrypted_username = encrypt(master_password, entry["username"])
+    encrypted_secret = encrypt(master_password, entry["secret"])
+    encrypted_notes = encrypt(master_password, entry["notes"])
 
     # creating a new dictionary to add to the csv file
     adding_dict = {
@@ -80,19 +98,57 @@ def save_vault(vault_data, vault_name, master_password: str):
         "notes": encrypted_notes,
     }
 
-    vault_file_name = str(vault_name) + ".csv"  # get file name
-    with open(vault_file_name, "a") as f:
+    vault_file_name = vault_filename + ".csv"  # get file name
+    with open(vault_file_name, "a", encoding="utf-8") as f:
         f.write(str(adding_dict) + "\n")  # write our new dictionary to the file
     return
 
+def change_master_password(vault_filename: str, old_password: str, new_password: str) -> bool:
+    """Re-encrypt entire vault with new master password."""
+    entries = load_vault(vault_filename, old_password)
+    if entries is None:
+        return False
 
-# the below functions aren't separetly used
-def encrypt_data(data, key):
-    """Encrypt data using the provided key."""
-    encrypted_data = encrypt(key, data)
-    return encrypted_data
+    # Update/add the master password entry
+    master_found = False
+    for entry in entries:
+        if entry["name"] == "__MASTER_PASSWORD__":
+            entry["secret"] = new_password
+            master_found = True
+
+    if not master_found:
+        entries.append({
+            "name": "__MASTER_PASSWORD__",
+            "username": "__MASTER__",
+            "secret": new_password,
+            "notes": "Automatically stored master password",
+        })
+
+    # Overwrite the file
+    vault_file_name = vault_filename + ".csv"
+    try:
+        with open(vault_file_name, "w", encoding="utf-8"):
+            pass  # Truncate
+    except Exception as e:
+        print(f"[!] Could not clear vault file: {e}")
+        return False
+
+    # Re-save all entries with new password
+    try:
+        for entry in entries:
+            save_vault(entry, vault_filename, new_password)
+        return True
+    except Exception as e:
+        print(f"[!] Failed during re-encryption: {e}")
+        return False
+
+# # the below functions aren't separetly used
+# def encrypt_data(data, key):
+#     """Encrypt data using the provided key."""
+#     encrypted_data = encrypt(key, data)
+#     return encrypted_data
 
 
-def decrypt_data(data, key):
-    """Decrypt data using the provided key."""
-    pass
+# def decrypt_data(data, key):
+#     """Decrypt data using the provided key."""
+#     pass
