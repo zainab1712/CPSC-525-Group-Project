@@ -98,6 +98,7 @@ def handle_add(vault_data: list, master_passwd: str, vault_filename: str) -> lis
     return vault_data + [new_entry]
 
 
+
 """Handle the 'generate' command."""
 
 def handle_generate():
@@ -271,6 +272,75 @@ def handle_delete(vault_data: list, master_passwd: str, vault_filename: str) -> 
         return vault_data
 
 
+"""Handle the 'edit' command."""
+
+def handle_edit(vault_data: list, master_passwd: str, vault_filename: str) -> list:    # Edit the vault
+    if vault_data is None or vault_filename is None:
+        print("[!] No vault loaded.")
+        return vault_data
+
+    # Prompt user for entry details
+    name = input("Entry name: ").strip()
+    entry = get_entry(master_passwd, vault_filename, name)
+
+    if entry:
+        try:
+            # get the original values
+            valut_data = load_vault(vault_filename, master_passwd)
+
+        except FileNotFoundError:
+            print(f"[!] Vault file '{vault_file_name}' not found.")
+            return None
+        except Exception as e:
+            print(f"Failed to load vault: {e}")
+            raise
+        
+        try:
+            # ask for changes for the name
+            edit_name = input("  Edit the name? (y/n): ").strip().lower() == "y"
+            if edit_name:
+                name_change = input("  Input change: ").strip().lower()
+            else:
+                name_change = vault_data["name"]
+            
+            # ask for changes for the username
+            edit_username = input("  Edit the username? (y/n): ").strip().lower() == "y"
+            if edit_username:
+                username_change = input("  Input change: ").strip().lower()
+            else:
+                username_change = vault_data["username"]
+                
+            # ask for changes for the username
+            edit_secret = input("  Edit the secret? (y/n): ").strip().lower() == "y"
+            if edit_secret:
+                secret_change = input("  Input change: ").strip().lower()
+            else:
+                secret_change = vault_data["secret"]
+                
+            # ask for changes for the notes
+            edit_notes = input("  Edit the notes? (y/n): ").strip().lower() == "y"
+            if edit_notes:
+                notes_change = input("  Input change: ").strip().lower()
+            else:
+                notes_change = vault_data["notes"]
+                
+            # creating a new dictionary to replace the old entry
+            changed_entry = create_entry(name_change, username_change, secret_change, notes_change)
+                
+            # delete the old entry
+            delete_entry(master_passwd, vault_filename, name)
+
+            # encrypt the new data
+            save_vault(changed_entry, vault_filename, master_passwd)
+        
+            return 
+        except FileNotFoundError:
+            print(f"[!] Vault file '{vault_file_name}' not found.")
+            return None
+        except Exception as e:
+            print(f"Failed to load vault: {e}")
+            raise
+        
 """Handle the 'change-master' command."""
 
 def handle_change_master(vault_filename: str, vault_data: list, master_passwd: str) -> str:
@@ -432,9 +502,10 @@ def show_menu():
     print("4. get (Get an entry)")
     print("5. list (List entries)")
     print("6. delete (Delete an entry)")
-    print("7. change-master (Change master password)")
-    print("8. debug-dump (Unsafe decrypted dump)")
-    print("9. quit (End program)\n")
+    print("7. edit (Edit an entry)")
+    print("8. change-master (Change master password)")
+    print("9. debug-dump (Unsafe decrypted dump)")
+    print("10. quit (End program)\n")
     print("Enter a command, e.g. add, or a number, e.g. 2, from the menu.")
 
 
@@ -532,17 +603,20 @@ def main():
 
         elif command in ("6", "delete"):
             vault_data = handle_delete(vault_data, master_passwd, vault_filename)
-
-        elif command in ("7", "change-master"):
+            
+        elif command in ("7", "edit"):
+            vault_data = handle_edit(vault_data, master_passwd, vault_filename)
+            
+        elif command in ("8", "change-master"):
             new_pass = handle_change_master(vault_filename, vault_data, master_passwd)
             if new_pass != master_passwd:
                 master_passwd = new_pass
                 vault_data = load_vault(vault_filename, master_passwd)  # Reload with new password
 
-        elif command in ("8", "debug-dump"):
+        elif command in ("9", "debug-dump"):
             handle_debug_dump(vault_data, vault_filename)
 
-        elif command in ("9", "quit"):
+        elif command in ("10", "quit"):
             print("Exiting...")
             break
 

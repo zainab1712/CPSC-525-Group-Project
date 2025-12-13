@@ -29,17 +29,16 @@ def delete_entry(master_passwd: str, vault_filename: str, name: str) -> bool:
     vault_data = load_vault(vault_filename, master_passwd)
     if vault_data is None:
         return False
-    print("VAULT DATA!!!! ",vault_data , "\n\n\n")
-
+    
     # Find and separate the entry to delete
     remaining_entries = []
     deleted = False
     for entry in vault_data:
+        print(f"{entry=}")
         if entry["name"] == name:
             deleted = True
         else:
             remaining_entries.append(entry)
-
     if not deleted:
         return False
     
@@ -56,6 +55,7 @@ def delete_entry(master_passwd: str, vault_filename: str, name: str) -> bool:
     # Re-save all the remaining entries
     try:
         for entry in remaining_entries:
+            print("This should be adding the thing u didnt delete: ",entry)
             save_vault(entry, vault_filename, master_passwd)
         return True
     except Exception as e:
@@ -74,13 +74,21 @@ def list_entries(master_passwd: str, vault_filename: str) -> list[dict]:
 def get_entry(master_passwd: str, vault_filename: str, name: str) -> dict | None:
     """Get details for a specific entry by name."""
     # --- Decyrpt the data ---
-    vault_data = load_vault(vault_filename, master_passwd)
+    try:
+        vault_data = load_vault(vault_filename, master_passwd)
 
-    if vault_data is None:
+        if vault_data is None:
+            return None
+        
+        for e in vault_data:
+            if e["name"] == name:
+                return e
+        
+    except FileNotFoundError:
+        print(f"[!] Vault file '{vault_file_name}' not found.")
         return None
-    
-    for e in vault_data:
-        if e["name"] == name:
-            return e
+    except Exception as e:
+        print(f"Failed to get entry: {e}")
+        raise
     
     return None
