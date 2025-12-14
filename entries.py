@@ -34,7 +34,6 @@ def delete_entry(master_passwd: str, vault_filename: str, name: str) -> bool:
     remaining_entries = []
     deleted = False
     for entry in vault_data:
-        print(f"{entry=}")
         if entry["name"] == name:
             deleted = True
         else:
@@ -55,7 +54,6 @@ def delete_entry(master_passwd: str, vault_filename: str, name: str) -> bool:
     # Re-save all the remaining entries
     try:
         for entry in remaining_entries:
-            print("This should be adding the thing u didnt delete: ",entry)
             save_vault(entry, vault_filename, master_passwd)
         return True
     except Exception as e:
@@ -67,7 +65,6 @@ def list_entries(master_passwd: str, vault_filename: str) -> list[dict]:
     vault_data = load_vault(vault_filename, master_passwd)
     if vault_data is None:
         return []
-    # print(f"{vault_data=}")
     return vault_data
 
 

