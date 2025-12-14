@@ -48,7 +48,7 @@ def delete_entry(master_passwd: str, vault_filename: str, name: str) -> bool:
     try:
         with open(
             vault_file_name, "w", encoding="utf-8"
-        ):  # THIS SHOULD DELETE THE FILE CONTENTS NOT SURE
+        ):  
             pass
     except Exception as e:
         print(f"[!] Failed to clear vault file during delete: {e}")

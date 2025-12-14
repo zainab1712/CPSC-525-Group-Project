@@ -161,10 +161,38 @@ def handle_generate():
         print(
             "\nInclude these character types? (y/n for each) (all will be included by default if none selected)"
         )
-        use_upper = input("  Uppercase letters (A-Z)? (y/n): ").strip().lower() != "n"
-        use_lower = input("  Lowercase letters (a-z)? (y/n): ").strip().lower() != "n"
-        use_digits = input("  Digits (0-9)? (y/n): ").strip().lower() != "n"
-        use_symbols = input("  Symbols (!@#$%^&* etc.)? (y/n): ").strip().lower() == "y"
+
+        choice = ""
+        while choice != "y" and choice != "n":
+            choice = input("  Uppercase letters (A-Z)? (y/n): ").strip().lower()
+            if choice != "y" and choice != "n":
+                print("[!] Invalid choice — please type 'y' or 'n'.")
+            else:
+                use_upper = choice == "y"
+
+        choice = ""
+        while choice != "y" and choice != "n":
+            choice = input("  Lowercase letters (a-z)? (y/n): ").strip().lower()
+            if choice != "y" and choice != "n":
+                print("[!] Invalid choice — please type 'y' or 'n'.")
+            else:
+                use_lower = choice == "y"
+
+        choice = ""
+        while choice != "y" and choice != "n":
+            choice = input("  Digits (0-9)? (y/n): ").strip().lower()
+            if choice != "y" and choice != "n":
+                print("[!] Invalid choice — please type 'y' or 'n'.")
+            else:
+                use_digits = choice == "y"
+
+        choice = ""
+        while choice != "y" and choice != "n":
+            choice = input("  Symbols (!@#$%^&* etc.)? (y/n): ").strip().lower()
+            if choice != "y" and choice != "n":
+                print("[!] Invalid choice — please type 'y' or 'n'.")
+            else:
+                use_symbols = choice == "y"
 
         # Select all if user does not choose any
         if not (use_upper or use_lower or use_digits or use_symbols):
@@ -360,30 +388,56 @@ def handle_edit(
         if entry:
             try:
                 # ask for changes for the name
-                edit_name = input("  Edit the name? (y/n): ").strip().lower() == "y"
+                choice = ""
+                while choice != "y" and choice != "n":
+                    choice = input("  Edit the name? (y/n): ").strip().lower()
+                    if choice != "y" and choice != "n":
+                        print("[!] Invalid choice — please type 'y' or 'n'.")
+                    else:
+                        edit_name = choice == "y"
+
                 if edit_name:
                     name_change = input("  Input change: ").strip().lower()
                 else:
                     name_change = entry["name"]
 
                 # ask for changes for the username
-                edit_username = (
-                    input("  Edit the username? (y/n): ").strip().lower() == "y"
-                )
+                choice = ""
+                while choice != "y" and choice != "n":
+                    choice = input("  Edit the username? (y/n): ").strip().lower()
+                    if choice != "y" and choice != "n":
+                        print("[!] Invalid choice — please type 'y' or 'n'.")
+                    else:
+                        edit_username = choice == "y"
+
                 if edit_username:
                     username_change = input("  Input change: ").strip().lower()
                 else:
                     username_change = entry["username"]
 
                 # ask for changes for the username
-                edit_secret = input("  Edit the secret? (y/n): ").strip().lower() == "y"
+                choice = ""
+                while choice != "y" and choice != "n":
+                    choice = input("  Edit the secret? (y/n): ").strip().lower()
+                    if choice != "y" and choice != "n":
+                        print("[!] Invalid choice — please type 'y' or 'n'.")
+                    else:
+                        edit_secret = choice == "y"
+
                 if edit_secret:
                     secret_change = input("  Input change: ").strip().lower()
                 else:
                     secret_change = entry["secret"]
 
                 # ask for changes for the notes
-                edit_notes = input("  Edit the notes? (y/n): ").strip().lower() == "y"
+                choice = ""
+                while choice != "y" and choice != "n":
+                    choice = input("  Edit the notes? (y/n): ").strip().lower()
+                    if choice != "y" and choice != "n":
+                        print("[!] Invalid choice — please type 'y' or 'n'.")
+                    else:
+                        edit_notes = choice == "y"
+
                 if edit_notes:
                     notes_change = input("  Input change: ").strip().lower()
                 else:
