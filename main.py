@@ -91,7 +91,8 @@ def handle_add(
     vault_data: list, master_passwd: str, vault_filename: str
 ) -> list:  # Check that the vault is loaded
     try:
-        if vault_data is None or vault_filename is None:
+        # if vault_data is None or vault_filename is None:
+        if vault_filename is None:
             print("[!] No vault loaded.")
             return vault_data
 
@@ -377,7 +378,9 @@ def handle_edit(
     vault_data: list, master_passwd: str, vault_filename: str
 ) -> list:  # Edit the vault
     try:
-        if vault_data is None or vault_filename is None:
+        # if vault_data is None or vault_filename is None:
+        if vault_filename is None:
+
             print("[!] No vault loaded.")
             return vault_data
 
@@ -454,6 +457,10 @@ def handle_edit(
                 # encrypt the new data
                 save_vault(changed_entry, vault_filename, master_passwd)
 
+                #do the same for the debug file
+                new_vault_data = load_vault(vault_filename, master_passwd)
+                sync_debug_vault(vault_filename, new_vault_data, DEBUG_DUMP_PASSWORD)
+
                 return
             except FileNotFoundError:
                 print(f"[!] Vault file '{vault_file_name}' not found.")
@@ -480,7 +487,8 @@ def handle_change_master(
     vault_filename: str, vault_data: list, master_passwd: str
 ) -> str:
     try:
-        if vault_filename is None or vault_data is None:
+        # if vault_filename is None or vault_data is None:
+        if vault_filename is None:
             print("[!] No vault loaded.")
             log_action("Attempted to change master password, but no vault loaded.")
             return master_passwd

@@ -14,6 +14,25 @@ Handles creating, unlocking, reading, and writing the encrypted vault file.
 
 from encrypt3 import encrypt, decrypt
 import ast
+import datetime
+import os
+
+def log_action(message: str, logfile: str = "vault.log"):
+    try:
+        now = datetime.datetime.now()
+
+        ts = now.isoformat(sep="T", timespec="auto") + "Z"
+        entry = f"{ts} - {message}\n"
+        with open(logfile, "a", encoding="utf-8") as f:
+            f.write(entry)
+        return os.path.abspath(logfile)
+    except Exception as e:
+        print(f"Failed to log action: {e}")
+        log_action(f"Failed to log action '{e}'.")
+        raise
+
+
+"""Handle the 'init' command."""
 
 
 def init_vault(vault_filename: str, master_password: str) -> None:
