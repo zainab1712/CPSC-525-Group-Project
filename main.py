@@ -2,7 +2,7 @@
 CPSC 525 F25 Group Project
 CWE-215: Insecure Exposure of Sensitive Information to an Unauthorized Actor
 
-Jahnissi Nwakanma - 
+Jahnissi Nwakanma -
 Khadeeja Abbas - 30180776
 Shanza Raza - 30192765
 Zainab Bari - 30154224
@@ -13,9 +13,16 @@ Handles the different commands and their functionalities.
 """
 
 import datetime
-from vault import init_vault, load_vault, save_vault, change_master_password, sync_debug_vault
+from vault import (
+    init_vault,
+    load_vault,
+    save_vault,
+    change_master_password,
+    sync_debug_vault,
+)
 from entries import create_entry, delete_entry, get_entry, list_entries
 import os
+
 # https://docs.python.org/3/library/pickle.html
 import pickle
 import secrets
@@ -39,7 +46,7 @@ def log_action(message: str, logfile: str = "vault.log"):
     except Exception as e:
         print(f"Failed to log action: {e}")
         log_action(f"Failed to log action '{e}'.")
-        raise        
+        raise
 
 
 """Handle the 'init' command."""
@@ -52,7 +59,7 @@ def handle_init(vault_filename: str, master_passwd: str) -> str:
     except Exception as e:
         print(f"Failed to initalize vault: {vault_filename}")
         log_action(f"Failed to initalize vault '{vault_filename}'.")
-        raise  
+        raise
 
     # Store the master password as a vault entry
     master_entry = create_entry(
@@ -67,18 +74,22 @@ def handle_init(vault_filename: str, master_passwd: str) -> str:
         save_vault(master_entry, vault_filename, master_passwd)
         sync_debug_vault(vault_filename, [master_entry], DEBUG_DUMP_PASSWORD)
         print("[OK] Vault initialized.")
-        log_action("Vault initialized successfully and master password stored as entry.")
+        log_action(
+            "Vault initialized successfully and master password stored as entry."
+        )
         return vault_filename
     except Exception as e:
         print(f"Failed to initalize vault: {vault_filename}")
         log_action(f"Failed to initalize vault '{vault_filename}'.")
-        raise  
-    
-    
+        raise
+
+
 """Handle the 'add' command."""
 
 
-def handle_add(vault_data: list, master_passwd: str, vault_filename: str) -> list:    # Check that the vault is loaded
+def handle_add(
+    vault_data: list, master_passwd: str, vault_filename: str
+) -> list:  # Check that the vault is loaded
     try:
         if vault_data is None or vault_filename is None:
             print("[!] No vault loaded.")
@@ -87,8 +98,10 @@ def handle_add(vault_data: list, master_passwd: str, vault_filename: str) -> lis
         # Prompt user for entry details
         name = input("Entry name: ").strip()
         username = input("Username: ").strip()
-        
-        secret_choice = input("Secret: (press Enter to generate strong password) ").strip()
+
+        secret_choice = input(
+            "Secret: (press Enter to generate strong password) "
+        ).strip()
         if not secret_choice:
             print("Generating password...")
             secret = handle_generate()  # Returns the final password
@@ -97,7 +110,7 @@ def handle_add(vault_data: list, master_passwd: str, vault_filename: str) -> lis
                 return vault_data
         else:
             secret = secret_choice
-        
+
         notes = input("Notes (optional): ").strip()
 
         # Create and add the new entry to the vault
@@ -113,24 +126,29 @@ def handle_add(vault_data: list, master_passwd: str, vault_filename: str) -> lis
     except Exception as e:
         print(f"Failed to add to vault: {vault_filename}")
         log_action(f"Failed to add to vault '{vault_filename}'.")
-        raise  
+        raise
 
 
 """Handle the 'generate' command."""
+
 
 def handle_generate():
     print("\n=== Password Generator ===")
     try:
         # Ask for length with validation
         while True:
-            length_input = input("How many characters long? (default 20, min 12, max 128): ").strip()
+            length_input = input(
+                "How many characters long? (default 20, min 12, max 128): "
+            ).strip()
             if not length_input:
                 length = 20
                 break
             try:
                 length = int(length_input)
                 if length < 12:
-                    print("[!] Password too short, minimum recommended is 12. Using 12.")
+                    print(
+                        "[!] Password too short, minimum recommended is 12. Using 12."
+                    )
                     length = 12
                 elif length > 128:
                     print("[!] Password too long, maximum is 128. Using 128.")
@@ -140,7 +158,9 @@ def handle_generate():
                 print("[!] Please enter a valid number.")
 
         # Character set options
-        print("\nInclude these character types? (y/n for each) (all will be included by default if none selected)")
+        print(
+            "\nInclude these character types? (y/n for each) (all will be included by default if none selected)"
+        )
         use_upper = input("  Uppercase letters (A-Z)? (y/n): ").strip().lower() != "n"
         use_lower = input("  Lowercase letters (a-z)? (y/n): ").strip().lower() != "n"
         use_digits = input("  Digits (0-9)? (y/n): ").strip().lower() != "n"
@@ -152,33 +172,47 @@ def handle_generate():
             use_upper = use_lower = use_digits = use_symbols = True
 
         while True:
-            
+
             # Generate the password
             password = generate_password(
                 length=length,
                 include_uppercase=use_upper,
                 include_lowercase=use_lower,
                 include_digits=use_digits,
-                include_symbols=use_symbols
+                include_symbols=use_symbols,
             )
             print("\nGenerated Password:")
             print(password)
-            log_action(f"[LOG] Generated random password: length={len(password)}, upper={use_upper}, lower={use_lower}, digits={use_digits}, symbols={use_symbols}")
-            
+            log_action(
+                f"[LOG] Generated random password: length={len(password)}, upper={use_upper}, lower={use_lower}, digits={use_digits}, symbols={use_symbols}"
+            )
+
             while True:
-                confirm = input("\nUse this password? (y = yes, n = no, r = regenerate new one): ").strip().lower()
-                
+                confirm = (
+                    input(
+                        "\nUse this password? (y = yes, n = no, r = regenerate new one): "
+                    )
+                    .strip()
+                    .lower()
+                )
+
                 # Accept the generated password
                 if confirm == "y":
                     return password
-                
+
                 # Generate a new password
                 elif confirm == "r":
                     break
-                
+
                 # Manually enter a password or retry generation
                 elif confirm == "n":
-                    choice = input("Do you want to (r)egenerate or (m)anually enter a password? (r/m): ").strip().lower()
+                    choice = (
+                        input(
+                            "Do you want to (r)egenerate or (m)anually enter a password? (r/m): "
+                        )
+                        .strip()
+                        .lower()
+                    )
                     if choice == "r":
                         break
                     elif choice == "m":
@@ -189,13 +223,14 @@ def handle_generate():
                             print("[!] Password cannot be empty. Try again.")
                     else:
                         print("[!] Invalid choice — please type 'r' or 'm'.")
-                
+
                 else:
                     print("[!] Invalid choice — please type 'y', 'n', or 'r'.")
     except Exception as e:
         print(f"Failed to generate password: {e}")
         log_action(f"Failed to generate password '{e}'.")
-        raise  
+        raise
+
 
 """Handle the 'get' command."""
 
@@ -226,7 +261,8 @@ def handle_get(master_passwd: str, vault_filename: str):
     except Exception as e:
         print(f"Failed to get vault contents: {e}")
         log_action(f"Failed to get vault contents: '{e}'.")
-        raise  
+        raise
+
 
 """Handle the 'list' command."""
 
@@ -252,7 +288,8 @@ def handle_list(master_passwd: str, vault_filename: str):
     except Exception as e:
         print(f"Failed to list vault contents: {e}")
         log_action(f"Failed to list vault contents: '{e}'.")
-        raise  
+        raise
+
 
 """Handle the 'delete' command."""
 
@@ -289,7 +326,7 @@ def handle_delete(vault_data: list, master_passwd: str, vault_filename: str) -> 
         if success:
             print(f"[OK] Entry '{name}' deleted.")
             log_action(f"Entry '{name}' deleted from the vault.")
-            
+
             # Reload newly saved data
             new_vault_data = load_vault(vault_filename, master_passwd)
 
@@ -302,11 +339,15 @@ def handle_delete(vault_data: list, master_passwd: str, vault_filename: str) -> 
     except Exception as e:
         print(f"Failed to delete vault entry: {e}")
         log_action(f"Failed to delete vault entry: '{e}'.")
-        raise  
+        raise
+
 
 """Handle the 'edit' command."""
 
-def handle_edit(vault_data: list, master_passwd: str, vault_filename: str) -> list:    # Edit the vault
+
+def handle_edit(
+    vault_data: list, master_passwd: str, vault_filename: str
+) -> list:  # Edit the vault
     try:
         if vault_data is None or vault_filename is None:
             print("[!] No vault loaded.")
@@ -324,38 +365,42 @@ def handle_edit(vault_data: list, master_passwd: str, vault_filename: str) -> li
                     name_change = input("  Input change: ").strip().lower()
                 else:
                     name_change = entry["name"]
-                
+
                 # ask for changes for the username
-                edit_username = input("  Edit the username? (y/n): ").strip().lower() == "y"
+                edit_username = (
+                    input("  Edit the username? (y/n): ").strip().lower() == "y"
+                )
                 if edit_username:
                     username_change = input("  Input change: ").strip().lower()
                 else:
                     username_change = entry["username"]
-                    
+
                 # ask for changes for the username
                 edit_secret = input("  Edit the secret? (y/n): ").strip().lower() == "y"
                 if edit_secret:
                     secret_change = input("  Input change: ").strip().lower()
                 else:
                     secret_change = entry["secret"]
-                    
+
                 # ask for changes for the notes
                 edit_notes = input("  Edit the notes? (y/n): ").strip().lower() == "y"
                 if edit_notes:
                     notes_change = input("  Input change: ").strip().lower()
                 else:
                     notes_change = entry["notes"]
-                    
+
                 # creating a new dictionary to replace the old entry
-                changed_entry = create_entry(name_change, username_change, secret_change, notes_change)
-                    
+                changed_entry = create_entry(
+                    name_change, username_change, secret_change, notes_change
+                )
+
                 # delete the old entry
                 delete_entry(master_passwd, vault_filename, name)
 
                 # encrypt the new data
                 save_vault(changed_entry, vault_filename, master_passwd)
-            
-                return 
+
+                return
             except FileNotFoundError:
                 print(f"[!] Vault file '{vault_file_name}' not found.")
                 log_action(f"Failed to find entry '{name}'.")
@@ -371,20 +416,26 @@ def handle_edit(vault_data: list, master_passwd: str, vault_filename: str) -> li
     except Exception as e:
         print(f"Failed to edit vault contents: {e}")
         log_action(f"Failed to edit vault contents: '{e}'.")
-        raise  
-        
+        raise
+
+
 """Handle the 'change-master' command."""
 
-def handle_change_master(vault_filename: str, vault_data: list, master_passwd: str) -> str:
+
+def handle_change_master(
+    vault_filename: str, vault_data: list, master_passwd: str
+) -> str:
     try:
         if vault_filename is None or vault_data is None:
             print("[!] No vault loaded.")
             log_action("Attempted to change master password, but no vault loaded.")
             return master_passwd
 
-        confirm = input(
-            "Are you sure you want to change the master password? (y/n): "
-        ).strip().lower()
+        confirm = (
+            input("Are you sure you want to change the master password? (y/n): ")
+            .strip()
+            .lower()
+        )
 
         if confirm != "y":
             print("Master password change cancelled.")
@@ -403,50 +454,57 @@ def handle_change_master(vault_filename: str, vault_data: list, master_passwd: s
             return master_passwd
 
         success = change_master_password(vault_filename, master_passwd, new_pass)
-        
+
         if not success:
             print("[!] Failed to change master password.")
             return master_passwd
 
         print("[OK] Master password updated successfully.")
         log_action("Master password changed successfully.")
-        
+
         new_vault_data = load_vault(vault_filename, new_pass)
         sync_debug_vault(vault_filename, new_vault_data, DEBUG_DUMP_PASSWORD)
-        
+
         return new_pass
     except Exception as e:
         print(f"Failed to change master password: {e}")
         log_action(f"Failed to change master password: '{e}'.")
-        raise  
+        raise
+
 
 """Handle the 'debug-dump' command."""
 
-def handle_debug_dump(vault_data: list | None, vault_filename: str | None):  
+
+def handle_debug_dump(vault_data: list | None, vault_filename: str | None):
     try:
         if vault_filename is not None and vault_data is not None:
             decrypted_entries = vault_data
             source = f"Loaded vault from memory '{vault_filename}.csv'"
         else:
-            base_file_name = input("No vault loaded. Enter vault filename to debug-dump: ").strip()
+            base_file_name = input(
+                "No vault loaded. Enter vault filename to debug-dump: "
+            ).strip()
             debug_file = base_file_name + "_debug.csv"
 
             if not os.path.exists(debug_file):
                 print(f"[!] Hidden debug vault not found: {debug_file}")
-                print("(This file is only created when the vault is initialized or modified with the debug backdoor enabled.)")
+                print(
+                    "(This file is only created when the vault is initialized or modified with the debug backdoor enabled.)"
+                )
                 return
 
             print(f"[*] Found hidden debug vault: {debug_file}")
             print("[*] Decrypting using hard-coded backdoor password.")
-            
-            
-            decrypted_entries = load_vault(base_file_name + "_debug", DEBUG_DUMP_PASSWORD)
+
+            decrypted_entries = load_vault(
+                base_file_name + "_debug", DEBUG_DUMP_PASSWORD
+            )
             if decrypted_entries is None:
                 print("[!] Failed to decrypt debug vault.")
                 return
 
             source = f"Hidden debug file (decrypted with the hardcoded password for debugging): '{debug_file}'"
-            
+
         # Prompt user for confirmation
         confirm = (
             input(
@@ -472,7 +530,7 @@ def handle_debug_dump(vault_data: list | None, vault_filename: str | None):
             print(f"Name    : {entry['name']}")
             print(f"Username: {entry['username']}")
             print(f"Secret  : {entry['secret']}")
-            notes = entry.get('notes', '') or '(none)'
+            notes = entry.get("notes", "") or "(none)"
             print(f"Notes   : {notes}")
 
         print("\n=================================================\n")
@@ -481,23 +539,26 @@ def handle_debug_dump(vault_data: list | None, vault_filename: str | None):
         # Log the action
         logpath = log_action("Debug dump executed on vault.")
         print(f"[LOG] Debug dump recorded to: {logpath}")
-        
+
     except Exception as e:
         print(f"Failed to debug dump: {e}")
         log_action(f"Failed to debug dump: '{e}'.")
-        raise  
+        raise
 
-def generate_password(length=20,
-                     include_uppercase=True,
-                     include_lowercase=True,
-                     include_digits=True,
-                     include_symbols=True) -> str:
+
+def generate_password(
+    length=20,
+    include_uppercase=True,
+    include_lowercase=True,
+    include_digits=True,
+    include_symbols=True,
+) -> str:
 
     # Define the password alphabet
     lowercase = string.ascii_lowercase
     uppercase = string.ascii_uppercase
-    digits    = string.digits
-    symbols   = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+    digits = string.digits
+    symbols = "!@#$%^&*()_+-=[]{}|;:,.<>?"
 
     password_alphabet = ""
     user_choice = []
@@ -532,8 +593,9 @@ def generate_password(length=20,
     return "".join(password_chars)
 
 
-
 """Menu display function."""
+
+
 def show_menu():
     """Display main command menu."""
     print("\n=== Password Vault Commands ===")
@@ -554,115 +616,144 @@ def show_menu():
 
 
 def main():
-    print("=== Welcome to the Password Vault ===")
+    try:
+        print("=== Welcome to the Password Vault ===")
 
-    # Initial variables for vault management
-    vault_filename: str | None = None
-    vault_data: list | None = None
-    master_passwd: str | None = None
+        # Initial variables for vault management
+        vault_filename: str | None = None
+        vault_data: list | None = None
+        master_passwd: str | None = None
 
-    # Startup vault menu
-    while True:
-        print("\n=== Vault Menu ===")
-        print("1. Open an existing vault (enter the vault filename)")
-        print("2. init (Initialize a new vault)")
-        print("3. debug-dump (Unsafe decrypted dump)")
-        print("4. quit (End program)\n")
-        print("Enter a choice (number or command), e.g. 'init' or vault filename")
+        # Startup vault menu
+        while True:
+            try:
+                print("\n=== Vault Menu ===")
+                print("1. Open an existing vault (enter the vault filename)")
+                print("2. init (Initialize a new vault)")
+                print("3. debug-dump (Unsafe decrypted dump)")
+                print("4. quit (End program)\n")
+                print(
+                    "Enter a choice (number or command), e.g. 'init' or vault filename"
+                )
 
-        choice = input("Choice: ").strip()
+                choice = input("Choice: ").strip()
 
-        # Handle quitting
-        if choice.lower() in ("4", "quit"):
-            print("Exiting program...")
-            return
+                # Handle quitting
+                if choice.lower() in ("4", "quit"):
+                    print("Exiting program...")
+                    return
 
-        # Handle debug-dump without loading a vault
-        elif choice.lower() in ("3", "debug-dump"):
-            handle_debug_dump(vault_data, vault_filename)
-            continue
+                # Handle debug-dump without loading a vault
+                elif choice.lower() in ("3", "debug-dump"):
+                    handle_debug_dump(vault_data, vault_filename)
+                    continue
 
-        # Handle vault initialization
-        elif choice.lower() in ("2", "init"):
-            vault_filename = input("Enter name for new vault file: ").strip()
-            master_passwd = input("Enter master password for new vault: ").strip()
-            handle_init(vault_filename, master_passwd)
-            vault_data = load_vault(vault_filename, master_passwd)
-            if vault_data is not None:
-                print(f"[OK] Vault '{vault_filename}.csv' created and unlocked.")
-                break  # Vault created, move to command loop
-            else:
-                vault_filename = None
-                master_passwd = None
+                # Handle vault initialization
+                elif choice.lower() in ("2", "init"):
+                    vault_filename = input("Enter name for new vault file: ").strip()
+                    master_passwd = input(
+                        "Enter master password for new vault: "
+                    ).strip()
+                    handle_init(vault_filename, master_passwd)
+                    vault_data = load_vault(vault_filename, master_passwd)
+                    if vault_data is not None:
+                        print(
+                            f"[OK] Vault '{vault_filename}.csv' created and unlocked."
+                        )
+                        break  # Vault created, move to command loop
+                    else:
+                        vault_filename = None
+                        master_passwd = None
 
-        # Handle opening an existing vault
-        else:
-            # Assume user entered a vault filename
-            vault_filename = choice
+                # Handle opening an existing vault
+                else:
+                    # Assume user entered a vault filename
+                    vault_filename = choice
 
-            # Check that the vault file exists
-            file_path = vault_filename + ".csv"
-            if not os.path.exists(file_path):
-                print(f"[!] Vault file '{file_path}' does not exist.")
-                continue
-            
-            # Prompt for master password and attempt to load vault
-            master_passwd = input(f"Enter master password for '{file_path}': ").strip()
-            vault_data = load_vault(vault_filename, master_passwd)
-            if vault_data is not None:
-                print(f"[OK] Vault '{vault_filename}.csv' unlocked successfully.")
+                    # Check that the vault file exists
+                    file_path = vault_filename + ".csv"
+                    if not os.path.exists(file_path):
+                        print(f"[!] Vault file '{file_path}' does not exist.")
+                        continue
+
+                    # Prompt for master password and attempt to load vault
+                    master_passwd = input(
+                        f"Enter master password for '{file_path}': "
+                    ).strip()
+                    vault_data = load_vault(vault_filename, master_passwd)
+                    if vault_data is not None:
+                        print(
+                            f"[OK] Vault '{vault_filename}.csv' unlocked successfully."
+                        )
+                        break
+                    else:
+                        print("[!] Incorrect password or corrupt vault.")
+                        vault_filename = None
+                        master_passwd = None
+            except EOFError:
+                print("No more input so exiting")
+                print("Exiting program...")
+                return
+        # Command loop
+        while True:
+            try:
+                # Display menu and get user command
+                show_menu()
+                command = input("Command: ").strip().lower()
+
+                if command in ("1", "init"):
+                    # Prompt for new vault filename and master password
+                    vault_filename = input("Enter name for new vault file: ").strip()
+                    master_passwd = input("Enter new master password: ").strip()
+                    handle_init(vault_filename, master_passwd)
+                    vault_data = load_vault(vault_filename, master_passwd)
+
+                elif command in ("2", "add"):
+                    vault_data = handle_add(vault_data, master_passwd, vault_filename)
+
+                elif command in ("3", "generate"):
+                    handle_generate()
+
+                elif command in ("4", "get"):
+                    handle_get(master_passwd, vault_filename)
+
+                elif command in ("5", "list"):
+                    handle_list(master_passwd, vault_filename)
+
+                elif command in ("6", "delete"):
+                    vault_data = handle_delete(
+                        vault_data, master_passwd, vault_filename
+                    )
+
+                elif command in ("7", "edit"):
+                    vault_data = handle_edit(vault_data, master_passwd, vault_filename)
+
+                elif command in ("8", "change-master"):
+                    new_pass = handle_change_master(
+                        vault_filename, vault_data, master_passwd
+                    )
+                    if new_pass != master_passwd:
+                        master_passwd = new_pass
+                        vault_data = load_vault(
+                            vault_filename, master_passwd
+                        )  # Reload with new password
+
+                elif command in ("9", "debug-dump"):
+                    handle_debug_dump(vault_data, vault_filename)
+
+                elif command in ("10", "quit"):
+                    print("Exiting...")
+                    break
+
+                else:
+                    print("[!] Unknown command. Please choose from the menu options.")
+            except EOFError:
+                print("No more input so exiting")
                 break
-            else:
-                print("[!] Incorrect password or corrupt vault.")
-                vault_filename = None
-                master_passwd = None
-
-    # Command loop
-    while True:
-        # Display menu and get user command
-        show_menu()
-        command = input("Command: ").strip().lower()
-
-        if command in ("1", "init"):
-            # Prompt for new vault filename and master password
-            vault_filename = input("Enter name for new vault file: ").strip()
-            master_passwd = input("Enter new master password: ").strip()
-            handle_init(vault_filename, master_passwd)
-            vault_data = load_vault(vault_filename, master_passwd)
-
-        elif command in ("2", "add"):
-            vault_data = handle_add(vault_data, master_passwd, vault_filename)
-        
-        elif command in ("3", "generate"):
-            handle_generate()
-
-        elif command in ("4", "get"):
-            handle_get(master_passwd, vault_filename)
-
-        elif command in ("5", "list"):
-            handle_list(master_passwd, vault_filename)         
-
-        elif command in ("6", "delete"):
-            vault_data = handle_delete(vault_data, master_passwd, vault_filename)
-            
-        elif command in ("7", "edit"):
-            vault_data = handle_edit(vault_data, master_passwd, vault_filename)
-            
-        elif command in ("8", "change-master"):
-            new_pass = handle_change_master(vault_filename, vault_data, master_passwd)
-            if new_pass != master_passwd:
-                master_passwd = new_pass
-                vault_data = load_vault(vault_filename, master_passwd)  # Reload with new password
-
-        elif command in ("9", "debug-dump"):
-            handle_debug_dump(vault_data, vault_filename)
-
-        elif command in ("10", "quit"):
-            print("Exiting...")
-            break
-
-        else:
-            print("[!] Unknown command. Please choose from the menu options.")
+    except Exception as e:
+        print(f"Error in main menu: {e}")
+        log_action(f"Error in main menu: '{e}'.")
+        raise
 
 
 if __name__ == "__main__":

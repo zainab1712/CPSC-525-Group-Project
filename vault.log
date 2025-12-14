@@ -311,3 +311,141 @@
 2025-12-14T10:53:55.826034Z - Listed 3 entries from the vault.
 2025-12-14T10:54:05.394533Z - Debug dump executed on vault.
 2025-12-14T10:54:26.522563Z - Debug dump executed on vault.
+2025-12-14T11:08:12.733939Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:10:07.264467Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=False
+2025-12-14T11:12:55.991980Z - Entry 'n' added to the vault.
+2025-12-14T11:13:10.084213Z - Listed 2 entries from the vault.
+2025-12-14T11:15:13.529728Z - Debug dump executed on vault.
+2025-12-14T11:20:42.610872Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:20:42.615577Z - Entry 'newEntryForTesting' added to the vault.
+2025-12-14T11:20:42.616934Z - Listed 2 entries from the vault.
+2025-12-14T11:21:56.771093Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:21:56.773012Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:21:56.776211Z - Entry 'newEntryForTesting' added to the vault.
+2025-12-14T11:21:56.777028Z - Listed 2 entries from the vault.
+2025-12-14T11:22:39.847536Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:22:39.849619Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:22:39.852471Z - Entry 'newEntryForTesting' added to the vault.
+2025-12-14T11:22:39.853391Z - Listed 2 entries from the vault.
+2025-12-14T11:22:39.959885Z - Debug dump executed on vault.
+2025-12-14T11:24:16.175202Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:24:16.177282Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:24:16.180306Z - Entry 'newEntryForTesting' added to the vault.
+2025-12-14T11:24:16.181128Z - Listed 2 entries from the vault.
+2025-12-14T11:24:16.289551Z - Debug dump executed on vault.
+2025-12-14T11:24:16.290205Z - Error in main menu: 'EOF when reading a line'.
+2025-12-14T11:26:09.858649Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:26:09.860876Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:26:09.863784Z - Entry 'newEntryForTesting' added to the vault.
+2025-12-14T11:26:09.865242Z - Listed 2 entries from the vault.
+2025-12-14T11:26:09.970595Z - Debug dump executed on vault.
+2025-12-14T11:29:07.908951Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:29:07.911081Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:29:07.914085Z - Entry 'newEntryForTesting' added to the vault.
+2025-12-14T11:29:07.914902Z - Listed 2 entries from the vault.
+2025-12-14T11:29:08.019651Z - Debug dump executed on vault.
+2025-12-14T11:29:08.020319Z - Error in main menu: 'EOF when reading a line'.
+2025-12-14T11:29:45.075036Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:29:45.075974Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:29:45.078455Z - Entry 'newEntryForTesting' added to the vault.
+2025-12-14T11:29:45.079761Z - Listed 2 entries from the vault.
+2025-12-14T11:29:45.185490Z - Debug dump executed on vault.
+2025-12-14T11:30:16.978415Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:30:16.979285Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:30:16.981686Z - Entry 'newEntryForTesting' added to the vault.
+2025-12-14T11:30:16.982441Z - Listed 2 entries from the vault.
+2025-12-14T11:30:17.093181Z - Debug dump executed on vault.
+2025-12-14T11:30:22.564037Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:30:22.565135Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:30:22.569396Z - Entry 'newEntryForTesting' added to the vault.
+2025-12-14T11:30:22.571155Z - Listed 2 entries from the vault.
+2025-12-14T11:30:22.684231Z - Debug dump executed on vault.
+2025-12-14T11:30:28.329759Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:30:28.330676Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:30:28.333289Z - Entry 'newEntryForTesting' added to the vault.
+2025-12-14T11:30:28.334064Z - Listed 2 entries from the vault.
+2025-12-14T11:30:28.437392Z - Debug dump executed on vault.
+2025-12-14T11:30:31.508372Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:30:31.509315Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:30:31.511734Z - Entry 'newEntryForTesting' added to the vault.
+2025-12-14T11:30:31.512480Z - Listed 2 entries from the vault.
+2025-12-14T11:30:31.617348Z - Debug dump executed on vault.
+2025-12-14T11:30:44.953686Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:30:44.955063Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:30:44.958232Z - Entry 'newEntryForTesting' added to the vault.
+2025-12-14T11:30:44.959316Z - Listed 2 entries from the vault.
+2025-12-14T11:30:45.070380Z - Debug dump executed on vault.
+2025-12-14T11:31:57.693504Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:31:57.694413Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:31:57.697290Z - Entry 'newEntryForTesting' added to the vault.
+2025-12-14T11:31:57.698110Z - Listed 2 entries from the vault.
+2025-12-14T11:31:57.817347Z - Debug dump executed on vault.
+2025-12-14T11:33:31.662763Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:35:49.465526Z - Entry 'e' added to the vault.
+2025-12-14T11:35:54.968305Z - Listed 2 entries from the vault.
+2025-12-14T11:37:20.541154Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:38:12.416579Z - Entry 'd' added to the vault.
+2025-12-14T11:39:29.235143Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:39:55.093157Z - Entry 'a' added to the vault.
+2025-12-14T11:43:48.191166Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:45:02.924691Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=False
+2025-12-14T11:45:21.765722Z - Entry 'a' added to the vault.
+2025-12-14T11:46:19.040443Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:46:19.447113Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:46:19.550066Z - Entry 'entry1' added to the vault.
+2025-12-14T11:47:43.253988Z - Debug dump executed on vault.
+2025-12-14T11:47:59.897925Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:48:00.306055Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:48:00.410340Z - Entry 'entry1' added to the vault.
+2025-12-14T11:48:00.779616Z - Debug dump executed on vault.
+2025-12-14T11:48:40.216170Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:48:59.224254Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:48:59.579875Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:48:59.684385Z - Entry 'entry1' added to the vault.
+2025-12-14T11:49:00.105998Z - Debug dump executed on vault.
+2025-12-14T11:49:06.356853Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:49:06.763285Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:49:06.867695Z - Entry 'entry1' added to the vault.
+2025-12-14T11:49:07.236263Z - Debug dump executed on vault.
+2025-12-14T11:49:12.155232Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:49:12.562183Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:49:12.668609Z - Entry 'entry1' added to the vault.
+2025-12-14T11:49:13.035235Z - Debug dump executed on vault.
+2025-12-14T11:49:19.726215Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:49:20.132330Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:49:20.237012Z - Entry 'entry1' added to the vault.
+2025-12-14T11:49:20.601233Z - Debug dump executed on vault.
+2025-12-14T11:49:30.370598Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:49:30.778303Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:49:30.882848Z - Entry 'entry1' added to the vault.
+2025-12-14T11:49:31.250570Z - Debug dump executed on vault.
+2025-12-14T11:49:43.269610Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:49:43.676351Z - [LOG] Generated random password: length=20, upper=True, lower=False, digits=True, symbols=True
+2025-12-14T11:49:43.781496Z - Entry 'entry1' added to the vault.
+2025-12-14T11:49:44.149051Z - Debug dump executed on vault.
+2025-12-14T11:50:00.761533Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:50:01.169925Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:50:01.273617Z - Entry 'entry1' added to the vault.
+2025-12-14T11:50:01.642249Z - Debug dump executed on vault.
+2025-12-14T11:50:07.955589Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:50:08.362763Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:50:08.467735Z - Entry 'entry1' added to the vault.
+2025-12-14T11:50:08.790976Z - Debug dump executed on vault.
+2025-12-14T11:50:13.909315Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:50:14.315684Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:50:49.997538Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:50:50.404890Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:50:50.513611Z - Entry 'entry1' added to the vault.
+2025-12-14T11:50:50.837264Z - Debug dump executed on vault.
+2025-12-14T11:51:12.295616Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:51:12.753960Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:51:12.860529Z - Entry 'entry1' added to the vault.
+2025-12-14T11:51:13.184133Z - Debug dump executed on vault.
+2025-12-14T11:51:23.122370Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:51:23.580543Z - [LOG] Generated random password: length=128, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:51:23.687321Z - Entry 'entry1' added to the vault.
+2025-12-14T11:51:24.007306Z - Debug dump executed on vault.
+2025-12-14T11:51:28.415156Z - Vault initialized successfully and master password stored as entry.
+2025-12-14T11:51:28.874344Z - [LOG] Generated random password: length=20, upper=True, lower=True, digits=True, symbols=True
+2025-12-14T11:51:28.981038Z - Entry 'entry1' added to the vault.
+2025-12-14T11:51:29.302111Z - Debug dump executed on vault.

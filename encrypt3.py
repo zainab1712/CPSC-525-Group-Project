@@ -2,7 +2,7 @@
 CPSC 525 F25 Group Project
 CWE-215: Insecure Exposure of Sensitive Information to an Unauthorized Actor
 
-Jahnissi Nwakanma - 
+Jahnissi Nwakanma -
 Khadeeja Abbas - 30180776
 Shanza Raza - 30192765
 Zainab Bari - 30154224
@@ -32,7 +32,7 @@ def encrypt(key, source, encode=True):
     encryptor = AES.new(key, AES.MODE_CBC, IV)
     padding = AES.block_size - len(source) % AES.block_size  # calculate needed padding
     # Use chr() repetition instead of bytes.decode()
-    source += chr(padding) * padding # Python 2.x: source += chr(padding) * padding
+    source += chr(padding) * padding  # Python 2.x: source += chr(padding) * padding
     data = IV + encryptor.encrypt(
         source.encode("utf-8")
     )  # store the IV at the beginning and encrypt

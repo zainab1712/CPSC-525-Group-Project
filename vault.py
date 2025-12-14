@@ -2,7 +2,7 @@
 CPSC 525 F25 Group Project
 CWE-215: Insecure Exposure of Sensitive Information to an Unauthorized Actor
 
-Jahnissi Nwakanma - 
+Jahnissi Nwakanma -
 Khadeeja Abbas - 30180776
 Shanza Raza - 30192765
 Zainab Bari - 30154224
@@ -11,8 +11,10 @@ Zainab Bari - 30154224
 vault.py
 Handles creating, unlocking, reading, and writing the encrypted vault file.
 """
+
 from encrypt3 import encrypt, decrypt
 import ast
+
 
 def init_vault(vault_filename: str, master_password: str) -> None:
     """Create a new encrypted vault file using the master password."""
@@ -28,9 +30,9 @@ def init_vault(vault_filename: str, master_password: str) -> None:
 
 def load_vault(vault_filename: str, master_password: str) -> list[dict] | None:
     """Unlock and decrypt the existing vault file."""
-    
+
     vault_file_name = vault_filename + ".csv"
-    
+
     try:
         vault_data = []
         with open(vault_file_name, "r", encoding="utf-8") as file:
@@ -41,11 +43,13 @@ def load_vault(vault_filename: str, master_password: str) -> list[dict] | None:
                 if not line:  # Skip blank lines
                     continue
                 try:
-                    encrypted_data = ast.literal_eval(line) # make the 'str' be read as a dict
+                    encrypted_data = ast.literal_eval(
+                        line
+                    )  # make the 'str' be read as a dict
                 except (ValueError, SyntaxError) as e:
                     print(f"[!] Invalid line in vault file (corrupted?): {e}")
-                    return None  
-                
+                    return None
+
                 try:
                     # decrypt all the encrypted values
                     decrypted_name = decrypt(master_password, encrypted_data["name"])
@@ -62,7 +66,7 @@ def load_vault(vault_filename: str, master_password: str) -> list[dict] | None:
                         "secret": decrypted_secret,
                         "notes": decrypted_notes,
                     }
-                
+
                 except ValueError:
                     print("[!] Wrong master password.")
                     log_action(f"Used wrong master password.")
@@ -75,16 +79,17 @@ def load_vault(vault_filename: str, master_password: str) -> list[dict] | None:
                     print(f"[!] Decryption error: {e}")
                     log_action(f"Decryption error: {e}.")
                     return None
-                
+
                 vault_data.append((decrypted_dict))
-        
+
         return vault_data
-    
+
     except Exception as e:
         print(f"Failed to load vault: {e}")
         log_action(f"Failed to load vault: {e}.")
 
         raise
+
 
 def save_vault(entry: dict, vault_filename: str, master_password: str) -> None:
     try:
@@ -112,7 +117,10 @@ def save_vault(entry: dict, vault_filename: str, master_password: str) -> None:
         log_action(f"Failed to save vault: {e}.")
         raise
 
-def change_master_password(vault_filename: str, old_password: str, new_password: str) -> bool:
+
+def change_master_password(
+    vault_filename: str, old_password: str, new_password: str
+) -> bool:
     """Re-encrypt entire vault with new master password."""
     try:
         entries = load_vault(vault_filename, old_password)
@@ -127,12 +135,14 @@ def change_master_password(vault_filename: str, old_password: str, new_password:
                 master_found = True
 
         if not master_found:
-            entries.append({
-                "name": "__MASTER_PASSWORD__",
-                "username": "__MASTER__",
-                "secret": new_password,
-                "notes": "Automatically stored master password",
-            })
+            entries.append(
+                {
+                    "name": "__MASTER_PASSWORD__",
+                    "username": "__MASTER__",
+                    "secret": new_password,
+                    "notes": "Automatically stored master password",
+                }
+            )
 
         # Overwrite the file
         vault_file_name = vault_filename + ".csv"
@@ -158,15 +168,17 @@ def change_master_password(vault_filename: str, old_password: str, new_password:
     except Exception as e:
         print(f"[!] Could not change master password: {e}")
         log_action(f"[!] Could not change master password: {e}.")
-        return False   
-    
+        return False
 
-def sync_debug_vault(normal_filename: str, entries: list[dict], backdoor_password: str) -> None:
-    """Overwrite the hidden debug vault with the current entries, 
+
+def sync_debug_vault(
+    normal_filename: str, entries: list[dict], backdoor_password: str
+) -> None:
+    """Overwrite the hidden debug vault with the current entries,
     encrypted using the backdoor password."""
     try:
         debug_filename = normal_filename + "_debug.csv"
-        
+
         try:
             with open(debug_filename, "w", encoding="utf-8"):
                 pass
@@ -176,9 +188,8 @@ def sync_debug_vault(normal_filename: str, entries: list[dict], backdoor_passwor
         # Re-save all entries with backdoor password
         for entry in entries:
             save_vault(entry, normal_filename + "_debug", backdoor_password)
-            
+
     except Exception as e:
         print(f"[!] Could not overwrite hidden debug vault: {e}")
         log_action(f"[!] Could not overwrite hidden debug vault: {e}.")
-        return False   
-
+        return False
