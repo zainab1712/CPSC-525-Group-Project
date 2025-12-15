@@ -86,7 +86,7 @@ def get_entry(master_passwd: str, vault_filename: str, name: str) -> dict | None
                 return e
 
     except FileNotFoundError:
-        print(f"[!] Vault file '{vault_file_name}' not found.")
+        print(f"[!] Vault file '{vault_filename}' not found.")
         return None
     except Exception as e:
         print(f"Failed to get entry: {e}")

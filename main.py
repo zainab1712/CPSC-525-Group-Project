@@ -32,12 +32,10 @@ DEBUG_DUMP_PASSWORD = "debugdump123"
 
 """Append a timestamped message to logfile.
 Returns the full path to the logfile."""
-
-
 def log_action(message: str, logfile: str = "vault.log"):
     try:
         now = datetime.datetime.now()
-
+        
         ts = now.isoformat(sep="T", timespec="auto") + "Z"
         entry = f"{ts} - {message}\n"
         with open(logfile, "a", encoding="utf-8") as f:
@@ -50,8 +48,6 @@ def log_action(message: str, logfile: str = "vault.log"):
 
 
 """Handle the 'init' command."""
-
-
 def handle_init(vault_filename: str, master_passwd: str) -> str:
     try:
         # Initialize a new vault with the given master password
@@ -85,8 +81,6 @@ def handle_init(vault_filename: str, master_passwd: str) -> str:
 
 
 """Handle the 'add' command."""
-
-
 def handle_add(
     vault_data: list, master_passwd: str, vault_filename: str
 ) -> list:  # Check that the vault is loaded
@@ -131,8 +125,6 @@ def handle_add(
 
 
 """Handle the 'generate' command."""
-
-
 def handle_generate():
     print("\n=== Password Generator ===")
     try:
@@ -262,8 +254,6 @@ def handle_generate():
 
 
 """Handle the 'get' command."""
-
-
 def handle_get(master_passwd: str, vault_filename: str):
     try:
         # Check that the vault is loaded
@@ -294,8 +284,6 @@ def handle_get(master_passwd: str, vault_filename: str):
 
 
 """Handle the 'list' command."""
-
-
 def handle_list(master_passwd: str, vault_filename: str):
     try:
         # Check that the vault is loaded
@@ -321,8 +309,6 @@ def handle_list(master_passwd: str, vault_filename: str):
 
 
 """Handle the 'delete' command."""
-
-
 def handle_delete(vault_data: list, master_passwd: str, vault_filename: str) -> list:
     try:
         # Check that the vault is loaded
@@ -372,8 +358,6 @@ def handle_delete(vault_data: list, master_passwd: str, vault_filename: str) -> 
 
 
 """Handle the 'edit' command."""
-
-
 def handle_edit(
     vault_data: list, master_passwd: str, vault_filename: str
 ) -> list:  # Edit the vault
@@ -418,7 +402,7 @@ def handle_edit(
                 else:
                     username_change = entry["username"]
 
-                # ask for changes for the username
+                # ask for changes for the password
                 choice = ""
                 while choice != "y" and choice != "n":
                     choice = input("  Edit the secret? (y/n): ").strip().lower()
@@ -463,7 +447,7 @@ def handle_edit(
 
                 return
             except FileNotFoundError:
-                print(f"[!] Vault file '{vault_file_name}' not found.")
+                print(f"[!] Vault file '{vault_filename}' not found.")
                 log_action(f"Failed to find entry '{name}'.")
 
                 return None
@@ -481,8 +465,6 @@ def handle_edit(
 
 
 """Handle the 'change-master' command."""
-
-
 def handle_change_master(
     vault_filename: str, vault_data: list, master_passwd: str
 ) -> str:
@@ -503,6 +485,7 @@ def handle_change_master(
             print("Master password change cancelled.")
             return master_passwd
 
+        # prompt for current and new passwords
         current = input("Enter current master password: ").strip()
         if current != master_passwd:
             print("[!] Incorrect current master password.")
@@ -511,6 +494,7 @@ def handle_change_master(
         new_pass = input("Enter new master password: ").strip()
         retype = input("Re-enter new master password: ").strip()
 
+        # validate new passwords match
         if new_pass != retype:
             print("[!] Passwords do not match.")
             return master_passwd
@@ -524,6 +508,7 @@ def handle_change_master(
         print("[OK] Master password updated successfully.")
         log_action("Master password changed successfully.")
 
+        # update the debug vault as well
         new_vault_data = load_vault(vault_filename, new_pass)
         sync_debug_vault(vault_filename, new_vault_data, DEBUG_DUMP_PASSWORD)
 
@@ -535,19 +520,20 @@ def handle_change_master(
 
 
 """Handle the 'debug-dump' command."""
-
-
 def handle_debug_dump(vault_data: list | None, vault_filename: str | None):
     try:
+        # Check if vault is loaded in memory
         if vault_filename is not None and vault_data is not None:
             decrypted_entries = vault_data
             source = f"Loaded vault from memory '{vault_filename}.csv'"
         else:
+            # Prompt for vault filename
             base_file_name = input(
                 "No vault loaded. Enter vault filename to debug-dump: "
             ).strip()
             debug_file = base_file_name + "_debug.csv"
 
+            # Check that the debug vault file exists
             if not os.path.exists(debug_file):
                 print(f"[!] Hidden debug vault not found: {debug_file}")
                 print(
@@ -558,6 +544,7 @@ def handle_debug_dump(vault_data: list | None, vault_filename: str | None):
             print(f"[*] Found hidden debug vault: {debug_file}")
             print("[*] Decrypting using hard-coded backdoor password.")
 
+            # Load and decrypt the debug vault
             decrypted_entries = load_vault(
                 base_file_name + "_debug", DEBUG_DUMP_PASSWORD
             )
@@ -608,6 +595,7 @@ def handle_debug_dump(vault_data: list | None, vault_filename: str | None):
         raise
 
 
+"""Generate a strong random password based on user criteria."""
 def generate_password(
     length=20,
     include_uppercase=True,
@@ -625,6 +613,7 @@ def generate_password(
     password_alphabet = ""
     user_choice = []
 
+    # Build the alphabet based on the user's choices
     if include_lowercase:
         password_alphabet += lowercase
         user_choice.append(secrets.choice(lowercase))
@@ -656,8 +645,6 @@ def generate_password(
 
 
 """Menu display function."""
-
-
 def show_menu():
     """Display main command menu."""
     print("\n=== Password Vault Commands ===")
@@ -675,8 +662,6 @@ def show_menu():
 
 
 """Main program loop. Displays menu and handles user commands."""
-
-
 def main():
     try:
         print("=== Welcome to the Password Vault ===")

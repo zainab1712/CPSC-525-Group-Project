@@ -16,7 +16,7 @@
 
 - High level description of your code and exploit:
 
-  This code implmented a CLI-vault generator. These vaults are supposed to store the user's private information, encrypting the contents with AES encryption. However, the developers decided to create a debugging version of the vault for testing and forgot to fully remove this option from the login screen. If the         attacker knows the name of the vault, they can then get all the contents of it without logging in. How horrible.
+  This code implmented a CLI-vault generator. These vaults are supposed to store the user's private information, encrypting the contents with AES encryption. However, the developers decided to create a debugging version of the vault for testing and forgot to fully remove this option from the login screen. If the attacker knows the name of the vault, they can then get all the contents of it without logging in. How horrible.
   
 - How and where to compile/run your code:
 
