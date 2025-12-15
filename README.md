@@ -20,12 +20,12 @@
   
 - How and where to compile/run your code:
 
-  To compile to CLI-application, run `python main.py`
+  To compile to CLI-application, run `python3 main.py`
 
   From here, you will see the text that will guide you through our program
 
 - How and where to compile/run your exploit:
 
-  To run the exploit code, run `python exploit.py`
+  To run the exploit code, run `python3 exploit.py`
 
   This will generate a new vault, encrypt it, then use the exploit to output the contents without needing the password
