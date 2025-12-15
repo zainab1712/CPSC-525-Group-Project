@@ -2,7 +2,7 @@
 CPSC 525 F25 Group Project
 CWE-215: Insecure Exposure of Sensitive Information to an Unauthorized Actor
 
-Jahnissi Nwakanma -
+Jahnissi Nwakanma - 30174827
 Khadeeja Abbas - 30180776
 Shanza Raza - 30192765
 Zainab Bari - 30154224

@@ -4,7 +4,7 @@
 *CWE-215: Insecure Exposure of Sensitive Information to an Unauthorized Actor*
 
 
-*Jahnissi Nwakanma -*
+*Jahnissi Nwakanma - 30174827*
 
 *Khadeeja Abbas - 30180776*
 
